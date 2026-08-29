@@ -1,10 +1,16 @@
 .compass-header {
   margin-bottom: 1.75rem;
+  text-align: center;
 }
 
 .compass-header h1 {
   font-size: 1.6rem;
   margin-bottom: 0.4rem;
+}
+
+.compass-header p {
+  max-width: 480px;
+  margin: 0 auto;
 }
 
 .compass-layout {

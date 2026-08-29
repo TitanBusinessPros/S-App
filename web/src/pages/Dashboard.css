@@ -1,10 +1,16 @@
 .dash-header {
   margin-bottom: 2rem;
+  text-align: center;
 }
 
 .dash-header h1 {
   font-size: 1.7rem;
   margin-bottom: 0.4rem;
+}
+
+.dash-header p {
+  max-width: 480px;
+  margin: 0 auto;
 }
 
 .feature-grid {
