@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build output
+web/dist/
+functions/lib/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+ui-debug.log
+*.local
+
+# Env / secrets — never commit these
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

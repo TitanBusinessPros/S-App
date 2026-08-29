@@ -1,0 +1,16 @@
+{
+  "name": "survival-day",
+  "private": true,
+  "description": "Test tooling for Survival Day. Runtime code lives in web/ and functions/, each with their own package.json.",
+  "scripts": {
+    "test:functions": "jest --config testing/functions/jest.config.js"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.16.0",
+    "firebase-functions-test": "^3.4.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.0"
+  }
+}
