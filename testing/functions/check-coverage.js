@@ -29,7 +29,7 @@ function getExportedFunctionNames(dir) {
   for (const file of files) {
     const content = fs.readFileSync(path.join(dir, file), "utf8");
     const exportConstRe = /export\s+const\s+(\w+)\s*=/g;
-    const exportFnRe = /export\s+function\s+(\w+)\s*\(/g;
+    const exportFnRe = /export\s+(?:async\s+)?function\s+(\w+)\s*\(/g;
 
     let match;
     while ((match = exportConstRe.exec(content)) !== null) {

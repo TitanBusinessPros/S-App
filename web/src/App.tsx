@@ -10,6 +10,7 @@ import { FirstAid } from './pages/FirstAid'
 import { Shelter } from './pages/Shelter'
 import { FindingWater } from './pages/FindingWater'
 import { Snares } from './pages/Snares'
+import { SpeciesNearby } from './pages/SpeciesNearby'
 
 export default function App() {
   return (
@@ -78,6 +79,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Snares />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/species"
+            element={
+              <ProtectedRoute>
+                <SpeciesNearby />
               </ProtectedRoute>
             }
           />
