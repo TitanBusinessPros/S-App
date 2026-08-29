@@ -5,5 +5,14 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if false;
     }
+
+    // User profiles are created server-side only (see createUserProfile
+    // Cloud Function). Users may read their own profile but can never write
+    // it directly — tier upgrades must go through a trusted Cloud Function,
+    // never a client write, or anyone could grant themselves premium.
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+    }
   }
 }

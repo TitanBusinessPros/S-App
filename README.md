@@ -4,6 +4,8 @@ An offline-first wilderness survival guide app.
 
 ## Structure
 
+This is an npm workspaces monorepo — one `npm install` at the root installs everything into a single deduped `node_modules` tree (this matters: `functions/` and `web/` used to get their own separate copies of shared packages, which silently broke Jest mocks in tests since the mock and the real code were different physical module instances).
+
 - `web/` — React + TypeScript PWA (Vite), installable and fully usable offline via service worker precaching.
 - `functions/` — Firebase Cloud Functions (TypeScript).
 - `testing/functions/` — Tests for every Cloud Function, plus `check-coverage.js`, which CI runs on every PR to fail the build if any deployed function lacks a matching test.
@@ -20,11 +22,8 @@ Stripe and other secrets are stored in GitHub Actions secrets — never committe
 ## Local development
 
 ```bash
-# Web app
-cd web && npm install && npm run dev
+npm install                        # once, from the repo root — installs everything
 
-# Functions — build + test
-npm install               # root: installs jest/ts-jest test tooling
-cd functions && npm install && npm run build && cd ..
-npm run test:functions
+npm run dev --workspace web        # web app dev server
+npm run build --workspace functions && npm run test:functions   # functions build + test
 ```

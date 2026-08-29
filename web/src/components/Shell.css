@@ -1,0 +1,59 @@
+.shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.shell-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(20, 24, 26, 0.7);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+}
+
+.shell-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.shell-brand-mark {
+  font-size: 1.3rem;
+}
+
+.shell-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.shell-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border-bright);
+}
+
+.shell-signout {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.shell-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}

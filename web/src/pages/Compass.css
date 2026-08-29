@@ -1,0 +1,115 @@
+.compass-header {
+  margin-bottom: 1.75rem;
+}
+
+.compass-header h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.compass-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 720px) {
+  .compass-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.compass-dial-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.compass-dial-wrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
+}
+
+.compass-dial {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.15s ease-out;
+}
+
+.compass-needle-fixed {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--accent);
+  font-size: 1.1rem;
+}
+
+.compass-reading {
+  text-align: center;
+}
+
+.compass-heading-num {
+  font-size: 2.4rem;
+  font-weight: 700;
+}
+
+.compass-heading-dir {
+  font-size: 1.1rem;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+
+.compass-enable-btn {
+  width: 100%;
+}
+
+.compass-note {
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.star-card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+
+.star-steps {
+  margin: 1rem 0;
+  padding-left: 1.2rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+  font-size: 0.92rem;
+}
+
+.star-steps li {
+  margin-bottom: 0.4rem;
+}
+
+.star-fact {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1.1rem;
+  margin-top: 1rem;
+}
+
+.star-fact-num {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.star-fact-label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.location-btn {
+  margin-top: 1rem;
+}
