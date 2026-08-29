@@ -5,6 +5,7 @@ import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
 import { Compass } from './pages/Compass'
 import { MapWater } from './pages/MapWater'
+import { Weather } from './pages/Weather'
 
 export default function App() {
   return (
@@ -33,6 +34,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <MapWater />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/weather"
+            element={
+              <ProtectedRoute>
+                <Weather />
               </ProtectedRoute>
             }
           />

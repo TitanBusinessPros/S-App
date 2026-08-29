@@ -1,0 +1,69 @@
+.weather-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.weather-header h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.weather-header p {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.weather-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.85rem;
+}
+
+.weather-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
+  padding: 1.1rem 0.75rem;
+}
+
+.weather-day-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.weather-day-icon {
+  font-size: 1.8rem;
+}
+
+.weather-day-condition {
+  font-size: 0.78rem;
+  min-height: 2.2em;
+}
+
+.weather-day-temps {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.weather-day-temps .lo {
+  color: var(--text-faint);
+  font-weight: 400;
+}
+
+.weather-day-detail {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+
+.weather-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  text-align: center;
+}
