@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Shell } from '../components/Shell'
 import { headingToCardinal, polarisAltitudeFromLatitude } from '../lib/compass'
 import './Compass.css'
@@ -20,6 +20,8 @@ export function Compass() {
   const [permission, setPermission] = useState<PermissionState>('unknown')
   const [latitude, setLatitude] = useState<number | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
+  const [sensorTimedOut, setSensorTimedOut] = useState(false)
+  const headingRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (typeof DeviceOrientationEvent === 'undefined') {
@@ -43,12 +45,28 @@ export function Compass() {
       const webkitHeading = (event as DeviceOrientationEvent & { webkitCompassHeading?: number })
         .webkitCompassHeading
       const value = webkitHeading ?? (event.alpha != null ? 360 - event.alpha : null)
-      if (value != null) setHeading(value)
+      if (value != null) {
+        headingRef.current = value
+        setSensorTimedOut(false)
+        setHeading(value)
+      }
     }
 
     const eventName = 'ondeviceorientationabsolute' in window ? 'deviceorientationabsolute' : 'deviceorientation'
     window.addEventListener(eventName, handleOrientation as EventListener)
     return () => window.removeEventListener(eventName, handleOrientation as EventListener)
+  }, [permission])
+
+  // Most laptops/desktops don't expose a magnetometer to the browser at
+  // all — no error is thrown, the event just never fires. Without this,
+  // that reads as "the compass is broken" instead of "no sensor here."
+  useEffect(() => {
+    if (permission !== 'granted') return
+    setSensorTimedOut(false)
+    const timer = window.setTimeout(() => {
+      if (headingRef.current == null) setSensorTimedOut(true)
+    }, 4000)
+    return () => window.clearTimeout(timer)
   }, [permission])
 
   const requestPermission = async () => {
@@ -130,9 +148,20 @@ export function Compass() {
                 {heading != null ? `${Math.round(heading)}°` : '—'}
               </div>
               <div className="compass-heading-dir mono">
-                {heading != null ? headingToCardinal(heading) : 'Waiting for sensor…'}
+                {heading != null
+                  ? headingToCardinal(heading)
+                  : sensorTimedOut
+                    ? 'No compass sensor found'
+                    : 'Waiting for sensor…'}
               </div>
             </div>
+          )}
+
+          {permission === 'granted' && heading == null && sensorTimedOut && (
+            <p className="compass-note">
+              This browser/device isn't sending compass data — most laptops and desktops don't have a
+              magnetometer. Open this page on a phone to use the live compass.
+            </p>
           )}
 
           {permission === 'unsupported' && (
