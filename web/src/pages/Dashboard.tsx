@@ -15,7 +15,7 @@ const FEATURES: Feature[] = [
   { icon: '🗺️', title: 'Water & Terrain Map', description: 'Ponds, creeks, rivers, and lakes within an adjustable radius.', to: '/app/map' },
   { icon: '🌿', title: 'Edible Plants', description: 'Plants, roots, and bark safe to eat nearby — in season only.' },
   { icon: '🐛', title: 'Edible Bugs & Wildlife', description: 'What you can hunt or forage, and how to cook it.' },
-  { icon: '⛅', title: '7-Day Weather', description: 'Forecast for your exact radius.' },
+  { icon: '⛅', title: '7-Day Weather', description: 'Forecast for your exact radius.', to: '/app/weather' },
   { icon: '🪵', title: 'Wood Identification', description: 'What to burn, what to smoke meat with, what to avoid.' },
   { icon: '🐍', title: 'Dangerous Wildlife', description: 'Snakes, spiders, and predators active in your area.' },
   { icon: '🩹', title: 'First Aid', description: 'Regional first aid guidance and medicinal plants.' },
