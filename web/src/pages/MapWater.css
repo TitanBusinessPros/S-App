@@ -1,0 +1,141 @@
+.map-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.map-header h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.map-header p {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.map-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.radius-control {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 220px;
+}
+
+.radius-control label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.radius-control input[type='range'] {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+.radius-value {
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 4.5rem;
+  text-align: right;
+}
+
+.map-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 1.25rem;
+}
+
+@media (max-width: 800px) {
+  .map-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.map-card {
+  padding: 0;
+  overflow: hidden;
+  height: 480px;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-elevated);
+  font-family: var(--font-display);
+}
+
+.water-divicon {
+  font-size: 1.1rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+}
+
+.map-placeholder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.feature-list-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.feature-list-card h2 {
+  font-size: 1rem;
+}
+
+.feature-list-empty {
+  font-size: 0.85rem;
+}
+
+.feature-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.feature-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.feature-list-name {
+  color: var(--text);
+  flex: 1;
+}
+
+.feature-list-type {
+  color: var(--text-faint);
+  font-size: 0.75rem;
+}
+
+.map-truncated-note {
+  font-size: 0.78rem;
+  color: var(--accent);
+}

@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
 import { Compass } from './pages/Compass'
+import { MapWater } from './pages/MapWater'
 
 export default function App() {
   return (
@@ -24,6 +25,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Compass />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/map"
+            element={
+              <ProtectedRoute>
+                <MapWater />
               </ProtectedRoute>
             }
           />
