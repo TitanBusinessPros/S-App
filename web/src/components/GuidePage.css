@@ -1,0 +1,90 @@
+.guide-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.guide-header h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.guide-header p {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.guide-disclaimer {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: rgba(217, 105, 95, 0.08);
+  border: 1px solid rgba(217, 105, 95, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.75rem;
+  font-size: 0.85rem;
+}
+
+.guide-disclaimer-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.guide-disclaimer p {
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.guide-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.guide-section h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.guide-section p {
+  font-size: 0.9rem;
+  margin-bottom: 0.6rem;
+}
+
+.guide-section ol,
+.guide-section ul {
+  margin: 0.5rem 0;
+  padding-left: 1.3rem;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.guide-section li {
+  margin-bottom: 0.35rem;
+}
+
+.guide-section strong {
+  color: var(--text);
+}
+
+.guide-subgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.guide-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.1rem;
+}
+
+.guide-card h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
