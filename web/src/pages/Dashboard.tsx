@@ -18,10 +18,10 @@ const FEATURES: Feature[] = [
   { icon: '⛅', title: '7-Day Weather', description: 'Forecast for your exact radius.', to: '/app/weather' },
   { icon: '🪵', title: 'Wood Identification', description: 'What to burn, what to smoke meat with, what to avoid.' },
   { icon: '🐍', title: 'Dangerous Wildlife', description: 'Snakes, spiders, and predators active in your area.' },
-  { icon: '🩹', title: 'First Aid', description: 'Regional first aid guidance and medicinal plants.' },
-  { icon: '⛺', title: 'Shelter Building', description: 'Shelter designs suited to your terrain and climate.' },
-  { icon: '💧', title: 'Finding Water', description: 'Where to dig, and how deep, based on local ground conditions.' },
-  { icon: '🪤', title: 'Snares & Traps', description: 'How to build snares to catch small game.' },
+  { icon: '🩹', title: 'First Aid', description: 'Core wilderness first aid steps.', to: '/app/first-aid' },
+  { icon: '⛺', title: 'Shelter Building', description: 'Shelter designs suited to your climate and materials.', to: '/app/shelter' },
+  { icon: '💧', title: 'Finding Water', description: 'How to spot, dig for, and collect water in the field.', to: '/app/water-sourcing' },
+  { icon: '🪤', title: 'Snares & Traps', description: 'How to build snares to catch small game.', to: '/app/snares' },
 ]
 
 export function Dashboard() {

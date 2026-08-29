@@ -6,6 +6,10 @@ import { Dashboard } from './pages/Dashboard'
 import { Compass } from './pages/Compass'
 import { MapWater } from './pages/MapWater'
 import { Weather } from './pages/Weather'
+import { FirstAid } from './pages/FirstAid'
+import { Shelter } from './pages/Shelter'
+import { FindingWater } from './pages/FindingWater'
+import { Snares } from './pages/Snares'
 
 export default function App() {
   return (
@@ -42,6 +46,38 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Weather />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/first-aid"
+            element={
+              <ProtectedRoute>
+                <FirstAid />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/shelter"
+            element={
+              <ProtectedRoute>
+                <Shelter />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/water-sourcing"
+            element={
+              <ProtectedRoute>
+                <FindingWater />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/snares"
+            element={
+              <ProtectedRoute>
+                <Snares />
               </ProtectedRoute>
             }
           />
