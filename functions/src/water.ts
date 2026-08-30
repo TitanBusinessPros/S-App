@@ -96,7 +96,7 @@ const OVERPASS_ENDPOINT = "https://overpass-api.de/api/interpreter";
  * from OpenStreetMap via the Overpass API. Capped at 500 results and a
  * 100-mile radius to keep Overpass queries fast and within its usage policy.
  */
-export const getWaterFeatures = onCall(async (request) => {
+export const getWaterFeatures = onCall({ invoker: "public" }, async (request) => {
   const { lat, lng, radiusMiles } = (request.data ?? {}) as {
     lat?: number;
     lng?: number;
