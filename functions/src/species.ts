@@ -52,7 +52,7 @@ export async function hasNearbyOccurrence(
  * fails (network hiccup), that species is excluded from this response
  * rather than failing the whole request.
  */
-export const getSpeciesNearby = onCall(async (request) => {
+export const getSpeciesNearby = onCall({ invoker: "public" }, async (request) => {
   const { lat, lng, radiusMiles, month } = (request.data ?? {}) as {
     lat?: number;
     lng?: number;
