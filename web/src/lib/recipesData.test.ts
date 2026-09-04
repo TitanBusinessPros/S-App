@@ -5,6 +5,8 @@ import {
   INSECT_SAFETY_GUIDE,
   BEETLE_GUIDE,
   CATERPILLAR_GUIDE,
+  ANT_GUIDE,
+  BEE_WASP_GUIDE,
   LIZARD_GUIDE,
   TURTLE_GUIDE,
   SNAKE_GUIDE,
@@ -45,6 +47,12 @@ const BEETLE_GUIDE_ONLY = ['Japanese Beetles', 'Dung Beetles', 'Water Beetles', 
 const CATERPILLAR_BATCH_ANIMALS = ['Caterpillars', 'Beetle Grubs', 'Black Soldier Fly Larvae', 'Caddisfly Larvae']
 // Larva groups covered only in CATERPILLAR_GUIDE's species-status list — no recipe, by design.
 const CATERPILLAR_GUIDE_ONLY = ['Fly Maggots', 'Mosquito Larvae', 'Mayfly Nymphs']
+const ANTS = ['Honeypot Ants', 'Carpenter Ants', 'Field Ants', 'Harvester Ants', 'Leafcutter Ants', 'Ant Brood']
+// Ant groups covered only in ANT_GUIDE's species-status list — no recipe, by design.
+const ANT_GUIDE_ONLY = ['Fire Ants', 'Pavement Ants']
+const BEES_AND_WASPS = ['Honey Bee', 'Bumblebee', 'Paper Wasps', 'Yellowjacket', 'Wasp Brood']
+// Bee/wasp groups covered only in BEE_WASP_GUIDE's species-status list — no recipe, by design.
+const BEE_WASP_GUIDE_ONLY = ['Solitary Bees', 'Solitary Wasps']
 // Mammals + food-type categories (Offal, Eggs) — no blanket grouping, so
 // they stay in the plain A-Z index rather than a dedicated category.
 const AZ_ONLY_ANIMALS = ['Deer', 'Elk', 'Pronghorn', 'Rabbit', 'Squirrel', 'Beaver', 'Raccoon', 'Opossum', 'Muskrat', 'Nutria', 'Armadillo', 'Offal', 'Eggs']
@@ -273,6 +281,48 @@ describe('RECIPES', () => {
     }
   })
 
+  it('has every named ant/ant-brood recipe in the Insects category, with no recipe for fire/pavement ants', () => {
+    for (const animal of ANTS) {
+      const recipe = RECIPES.find((r) => r.animal === animal)
+      expect(recipe, `expected a recipe for ${animal}`).toBeDefined()
+      expect(recipe?.category).toBe('Insects')
+    }
+    for (const animal of ANT_GUIDE_ONLY) {
+      const recipe = RECIPES.find((r) => r.animal === animal)
+      expect(recipe, `expected no recipe for ${animal}`).toBeUndefined()
+    }
+  })
+
+  it('flags harvester ants and field ants with an identification caution', () => {
+    const harvester = RECIPES.find((r) => r.id === 'insect-harvester-ant-protein-snack')
+    expect(harvester?.caution).toMatch(/fire ants/i)
+
+    const field = RECIPES.find((r) => r.id === 'insect-field-ant-toasted')
+    expect(field?.caution?.length).toBeGreaterThan(0)
+  })
+
+  it('has every named bee/wasp recipe in the Insects category, with no recipe for solitary bees/wasps', () => {
+    for (const animal of BEES_AND_WASPS) {
+      const recipe = RECIPES.find((r) => r.animal === animal)
+      expect(recipe, `expected a recipe for ${animal}`).toBeDefined()
+      expect(recipe?.category).toBe('Insects')
+    }
+    for (const animal of BEE_WASP_GUIDE_ONLY) {
+      const recipe = RECIPES.find((r) => r.animal === animal)
+      expect(recipe, `expected no recipe for ${animal}`).toBeUndefined()
+    }
+  })
+
+  it('gives Honey Bee 7 recipes and flags the pollinator/wild-colony cautions on adult-bee and brood recipes', () => {
+    expect(RECIPES.filter((r) => r.animal === 'Honey Bee').length).toBe(7)
+
+    const roastedAdult = RECIPES.find((r) => r.id === 'insect-honey-bee-roasted-adult')
+    expect(roastedAdult?.caution).toMatch(/pollinator/i)
+
+    const bumblebee = RECIPES.find((r) => r.id === 'insect-bumblebee-brood-pan-fried')
+    expect(bumblebee?.caution?.length).toBeGreaterThan(0)
+  })
+
   it('keeps every mammal/offal/eggs entry in the plain A-Z index, not a dedicated category', () => {
     for (const animal of AZ_ONLY_ANIMALS) {
       const recipe = RECIPES.find((r) => r.animal === animal)
@@ -432,6 +482,47 @@ describe('CATERPILLAR_GUIDE', () => {
   })
 })
 
+describe('ANT_GUIDE', () => {
+  it('has a title and covers fire ants, pavement ants, and the "Ants I Would NOT Eat" sidebar', () => {
+    expect(ANT_GUIDE.title.length).toBeGreaterThan(0)
+
+    for (const name of ANT_GUIDE_ONLY) {
+      const entry = ANT_GUIDE.statusEntries.find((e) => e.name === name)
+      expect(entry, `expected an ANT_GUIDE entry for ${name}`).toBeDefined()
+    }
+
+    const doNotEat = ANT_GUIDE.statusEntries.find((e) => e.name === 'Ants I Would NOT Eat')
+    expect(doNotEat?.examples?.length).toBe(6)
+  })
+
+  it('flags fire ants as not recommended and pavement ants as contamination-prone', () => {
+    const fireAnts = ANT_GUIDE.statusEntries.find((e) => e.name === 'Fire Ants')
+    expect(fireAnts?.status).toMatch(/NOT RECOMMENDED/)
+
+    const pavementAnts = ANT_GUIDE.statusEntries.find((e) => e.name === 'Pavement Ants')
+    expect(pavementAnts?.note).toMatch(/contaminants/)
+  })
+})
+
+describe('BEE_WASP_GUIDE', () => {
+  it('has a title, a non-empty intro with the unidentified-bee-or-wasp rule, and status entries', () => {
+    expect(BEE_WASP_GUIDE.title.length).toBeGreaterThan(0)
+    expect(BEE_WASP_GUIDE.intro).toMatch(/Never eat an unidentified bee or wasp/)
+    expect(BEE_WASP_GUIDE.statusEntries.length).toBeGreaterThan(0)
+  })
+
+  it('covers solitary bees/wasps and the "Don\'t Experiment" sidebar', () => {
+    for (const name of BEE_WASP_GUIDE_ONLY) {
+      const entry = BEE_WASP_GUIDE.statusEntries.find((e) => e.name === name)
+      expect(entry, `expected a BEE_WASP_GUIDE entry for ${name}`).toBeDefined()
+    }
+
+    const dontExperiment = BEE_WASP_GUIDE.statusEntries.find((e) => e.name.includes("Don't Experiment"))
+    expect(dontExperiment?.examples?.length).toBe(6)
+    expect(dontExperiment?.examples?.some((e) => /Hornets/.test(e))).toBe(true)
+  })
+})
+
 describe('RECIPE_SAFETY_RULES', () => {
   it('is a non-empty list of non-empty strings', () => {
     expect(RECIPE_SAFETY_RULES.length).toBeGreaterThan(0)
@@ -498,7 +589,7 @@ describe('groupRecipesByLetter', () => {
     expect(grouped.D?.some((r) => r.animal === 'Deer')).toBe(true)
     // Birds, fish, frogs, lizards, turtles, snakes, crawfish, and mussels belong to their
     // dedicated category sections now, not the A-Z letter groups.
-    for (const animal of [...BIRDS, ...FISH, ...FROGS, 'Skink', 'Snapping Turtle', 'Rattlesnake', ...CRAWFISH, ...MUSSELS, ...INSECTS, ...BEETLES, ...CATERPILLAR_BATCH_ANIMALS]) {
+    for (const animal of [...BIRDS, ...FISH, ...FROGS, 'Skink', 'Snapping Turtle', 'Rattlesnake', ...CRAWFISH, ...MUSSELS, ...INSECTS, ...BEETLES, ...CATERPILLAR_BATCH_ANIMALS, ...ANTS, ...BEES_AND_WASPS]) {
       const inAnyLetterGroup = Object.values(grouped).some((letterRecipes) => letterRecipes.some((r) => r.animal === animal))
       expect(inAnyLetterGroup, `expected ${animal} to be excluded from the A-Z index`).toBe(false)
     }

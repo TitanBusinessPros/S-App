@@ -8,6 +8,10 @@ export default defineConfig({
     environment: 'jsdom',
     globals: false,
     setupFiles: ['./src/test-setup.ts'],
+    // The Recipes page has grown large enough that rendering it in jsdom
+    // can approach the 5s default under load — raise it to avoid flaky
+    // timeouts rather than real failures.
+    testTimeout: 20000,
   },
   plugins: [
     react(),

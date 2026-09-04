@@ -194,4 +194,27 @@ describe('RecipesContent', () => {
     expect(screen.getByText(/Puss caterpillars/)).toBeInTheDocument()
     expect(screen.getByText(/DO NOT COLLECT RANDOM WILD MAGGOTS FOR FOOD/)).toBeInTheDocument()
   })
+
+  it('renders the ant recipes and the ant species-status guide within the Insects section', () => {
+    render(<RecipesContent />)
+    expect(screen.getByText(/Simple Honeypot Ant Treat/)).toBeInTheDocument()
+    expect(screen.getByText(/Garlic-Butter Ants/)).toBeInTheDocument()
+    expect(screen.getByText(/Crispy Ant Brood/)).toBeInTheDocument()
+    expect(screen.getByText(/Ants — Species-by-Species Status/)).toBeInTheDocument()
+    expect(screen.getByText(/NOT RECOMMENDED AS A WILD FOOD/)).toBeInTheDocument()
+    expect(screen.getByText(/Ants I Would NOT Eat/)).toBeInTheDocument()
+  })
+
+  it('renders the bee/wasp recipes and the bee/wasp safety guide within the Insects section', () => {
+    render(<RecipesContent />)
+    expect(screen.getByText(/Simple Honey$/)).toBeInTheDocument()
+    expect(screen.getByText(/Fresh Honeycomb/)).toBeInTheDocument()
+    expect(screen.getByText(/Roasted Bumblebees/)).toBeInTheDocument()
+    expect(screen.getByText(/Crispy Wasps/)).toBeInTheDocument()
+    expect(screen.getByText(/Yellowjacket Brood Tacos/)).toBeInTheDocument()
+    expect(screen.getByText(/Wasp Brood Curry/)).toBeInTheDocument()
+    expect(screen.getByText(/Bees & Wasps — Safety & Species Status/)).toBeInTheDocument()
+    expect(screen.getByText(/Never eat an unidentified bee or wasp/)).toBeInTheDocument()
+    expect(screen.getByText(/harvest active hornet nests/)).toBeInTheDocument()
+  })
 })
