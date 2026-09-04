@@ -39,19 +39,24 @@ export function Dashboard() {
             <>
               <span className="feature-icon">{feature.icon}</span>
               <h3>{feature.title}</h3>
-              <p>{feature.description}</p>
-              <span className={`badge feature-status`}>
-                {feature.to ? 'Available' : 'Coming soon'}
-              </span>
             </>
           )
 
           return feature.to ? (
-            <Link key={feature.title} to={feature.to} className="card feature-card">
+            <Link
+              key={feature.title}
+              to={feature.to}
+              className="card feature-card"
+              title={feature.description}
+            >
               {content}
             </Link>
           ) : (
-            <div key={feature.title} className="card feature-card feature-card-disabled">
+            <div
+              key={feature.title}
+              className="card feature-card feature-card-disabled"
+              title={feature.description}
+            >
               {content}
             </div>
           )
