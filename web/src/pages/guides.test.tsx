@@ -170,4 +170,28 @@ describe('RecipesContent', () => {
     expect(screen.getByText(/Pesticides Are the Biggest Wild-Insect Issue/)).toBeInTheDocument()
     expect(screen.getByText(/Identify → verify legality/)).toBeInTheDocument()
   })
+
+  it('renders the beetle recipes and the beetle species-status guide within the Insects section', () => {
+    render(<RecipesContent />)
+    expect(screen.getByText(/Roasted June Beetles/)).toBeInTheDocument()
+    expect(screen.getByText(/Garlic-Paprika Mealworms/)).toBeInTheDocument()
+    expect(screen.getByText(/Roasted Superworms/)).toBeInTheDocument()
+    expect(screen.getByText(/Beetles — Species-by-Species Status/)).toBeInTheDocument()
+    expect(screen.getByText(/Beetles I Would NOT Put in the Food Section/)).toBeInTheDocument()
+    expect(screen.getByText(/Never identify an edible beetle by color alone/)).toBeInTheDocument()
+  })
+
+  it('renders the moth/caterpillar/grub/fly/aquatic-larva recipes and the caterpillar safety guide within the Insects section', () => {
+    render(<RecipesContent />)
+    expect(screen.getByText(/Chili-Lime Mealworms/)).toBeInTheDocument()
+    expect(screen.getByText(/Superworm Tacos/)).toBeInTheDocument()
+    expect(screen.getByText(/Cornmeal-Fried Large Caterpillars/)).toBeInTheDocument()
+    expect(screen.getByText(/Grub Fritters/)).toBeInTheDocument()
+    expect(screen.getByText(/Crispy Black Soldier Fly Larvae/)).toBeInTheDocument()
+    expect(screen.getByText(/Simple Caddisfly-Larva Fry/)).toBeInTheDocument()
+    expect(screen.getByText(/Caterpillars, Grubs & Larvae — Safety & Species Status/)).toBeInTheDocument()
+    expect(screen.getByText(/Never eat an unidentified caterpillar/)).toBeInTheDocument()
+    expect(screen.getByText(/Puss caterpillars/)).toBeInTheDocument()
+    expect(screen.getByText(/DO NOT COLLECT RANDOM WILD MAGGOTS FOR FOOD/)).toBeInTheDocument()
+  })
 })

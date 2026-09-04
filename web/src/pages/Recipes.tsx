@@ -8,6 +8,8 @@ import {
   FISH_SAFETY_GUIDE,
   FROG_SAFETY_GUIDE,
   INSECT_SAFETY_GUIDE,
+  BEETLE_GUIDE,
+  CATERPILLAR_GUIDE,
   LIZARD_GUIDE,
   TURTLE_GUIDE,
   SNAKE_GUIDE,
@@ -204,7 +206,13 @@ const CATEGORY_GUIDES: Record<RecipeCategory, React.ReactNode> = {
   Snakes: <AnimalGroupGuideCard guide={SNAKE_GUIDE} />,
   Crawfish: <AnimalGroupGuideCard guide={CRAWFISH_GUIDE} />,
   Mussels: <AnimalGroupGuideCard guide={MUSSEL_GUIDE} />,
-  Insects: <InsectGuideCard />,
+  Insects: (
+    <>
+      <InsectGuideCard />
+      <AnimalGroupGuideCard guide={BEETLE_GUIDE} />
+      <AnimalGroupGuideCard guide={CATERPILLAR_GUIDE} />
+    </>
+  ),
 }
 
 function RecipeCard({ recipe }: { recipe: Recipe }) {

@@ -3,6 +3,8 @@ import {
   FISH_SAFETY_GUIDE,
   FROG_SAFETY_GUIDE,
   INSECT_SAFETY_GUIDE,
+  BEETLE_GUIDE,
+  CATERPILLAR_GUIDE,
   LIZARD_GUIDE,
   TURTLE_GUIDE,
   SNAKE_GUIDE,
@@ -33,6 +35,16 @@ const INSECTS = [
   'Field Crickets', 'House Crickets', 'Tree Crickets', 'Grasshoppers', 'Differential Grasshopper',
   'Two-Striped Grasshopper', 'Katydids', 'Mormon Cricket', 'Locusts',
 ]
+const BEETLES = [
+  'June Beetles', 'June Beetle Grubs', 'Weevils', 'Longhorn Beetle Larvae', 'Stag Beetles',
+  'Darkling Beetle Larvae', 'Mealworms', 'Superworms',
+]
+// Beetle groups covered only in BEETLE_GUIDE's species-status list — no recipe, by design.
+const BEETLE_GUIDE_ONLY = ['Japanese Beetles', 'Dung Beetles', 'Water Beetles', 'Predaceous Diving Beetles', 'Water Scavenger Beetles', 'Buprestid Beetle Larvae']
+// New "animal" groups introduced by the moth/caterpillar/grub/fly/aquatic-larva batch, each with at least one recipe.
+const CATERPILLAR_BATCH_ANIMALS = ['Caterpillars', 'Beetle Grubs', 'Black Soldier Fly Larvae', 'Caddisfly Larvae']
+// Larva groups covered only in CATERPILLAR_GUIDE's species-status list — no recipe, by design.
+const CATERPILLAR_GUIDE_ONLY = ['Fly Maggots', 'Mosquito Larvae', 'Mayfly Nymphs']
 // Mammals + food-type categories (Offal, Eggs) — no blanket grouping, so
 // they stay in the plain A-Z index rather than a dedicated category.
 const AZ_ONLY_ANIMALS = ['Deer', 'Elk', 'Pronghorn', 'Rabbit', 'Squirrel', 'Beaver', 'Raccoon', 'Opossum', 'Muskrat', 'Nutria', 'Armadillo', 'Offal', 'Eggs']
@@ -205,6 +217,62 @@ describe('RECIPES', () => {
     expect(katydids?.caution?.length).toBeGreaterThan(0)
   })
 
+  it('has every named beetle recipe in the Insects category', () => {
+    for (const animal of BEETLES) {
+      const recipe = RECIPES.find((r) => r.animal === animal)
+      expect(recipe, `expected a recipe for ${animal}`).toBeDefined()
+      expect(recipe?.category).toBe('Insects')
+    }
+  })
+
+  it('gives June Beetle Grubs, Longhorn Beetle Larvae, Stag Beetles, and Darkling Beetle Larvae an identification/handling caution', () => {
+    for (const animal of ['June Beetle Grubs', 'Longhorn Beetle Larvae', 'Stag Beetles', 'Darkling Beetle Larvae']) {
+      const recipe = RECIPES.find((r) => r.animal === animal)
+      expect(recipe?.caution?.length, `expected a caution on ${animal}`).toBeGreaterThan(0)
+    }
+  })
+
+  it('does not give a recipe to the guide-only beetle groups (Japanese/dung/water beetles, buprestids)', () => {
+    for (const animal of BEETLE_GUIDE_ONLY) {
+      const recipe = RECIPES.find((r) => r.animal === animal)
+      expect(recipe, `expected no recipe for ${animal}`).toBeUndefined()
+    }
+  })
+
+  it('has every new caterpillar/grub/fly/aquatic-larva animal in the Insects category, with multiple recipes each', () => {
+    for (const animal of CATERPILLAR_BATCH_ANIMALS) {
+      const recipes = RECIPES.filter((r) => r.animal === animal)
+      expect(recipes.length, `expected at least one recipe for ${animal}`).toBeGreaterThan(0)
+      for (const recipe of recipes) {
+        expect(recipe.category).toBe('Insects')
+      }
+    }
+    // Mealworms and Superworms each pick up more recipes from this batch, on top of their existing one.
+    expect(RECIPES.filter((r) => r.animal === 'Mealworms').length).toBe(5)
+    expect(RECIPES.filter((r) => r.animal === 'Superworms').length).toBe(3)
+  })
+
+  it('flags every unidentified-caterpillar recipe with a confirmed-species-only caution', () => {
+    const cautionExpected = [
+      'insect-caterpillar-cornmeal-fried', 'insect-caterpillar-roasted-moth-larva', 'insect-caterpillar-garlic-herb',
+      'insect-caterpillar-tacos', 'insect-caterpillar-fried-rice', 'insect-caterpillar-noodle-bowl', 'insect-caterpillar-coconut-curry',
+    ]
+    for (const id of cautionExpected) {
+      const recipe = RECIPES.find((r) => r.id === id)
+      expect(recipe?.caution?.length, `expected a caution on ${id}`).toBeGreaterThan(0)
+    }
+  })
+
+  it('flags black soldier fly larvae with a wild-collection caution, and gives no recipe to the guide-only larva groups', () => {
+    const bsfl = RECIPES.find((r) => r.id === 'insect-black-soldier-fly-larva-crispy')
+    expect(bsfl?.caution).toMatch(/garbage, manure, compost, or carcasses/)
+
+    for (const animal of CATERPILLAR_GUIDE_ONLY) {
+      const recipe = RECIPES.find((r) => r.animal === animal)
+      expect(recipe, `expected no recipe for ${animal}`).toBeUndefined()
+    }
+  })
+
   it('keeps every mammal/offal/eggs entry in the plain A-Z index, not a dedicated category', () => {
     for (const animal of AZ_ONLY_ANIMALS) {
       const recipe = RECIPES.find((r) => r.animal === animal)
@@ -313,6 +381,57 @@ describe('CRAWFISH_GUIDE, MUSSEL_GUIDE', () => {
   })
 })
 
+describe('BEETLE_GUIDE', () => {
+  it('has a title and at least one status entry', () => {
+    expect(BEETLE_GUIDE.title.length).toBeGreaterThan(0)
+    expect(BEETLE_GUIDE.statusEntries.length).toBeGreaterThan(0)
+  })
+
+  it('covers every guide-only beetle group with a status entry', () => {
+    for (const name of BEETLE_GUIDE_ONLY) {
+      const entry = BEETLE_GUIDE.statusEntries.find((e) => e.name === name)
+      expect(entry, `expected a BEETLE_GUIDE entry for ${name}`).toBeDefined()
+    }
+  })
+
+  it('includes the "Do Not Eat" sidebar with its six warnings and the identification-matters note', () => {
+    const doNotEat = BEETLE_GUIDE.statusEntries.find((e) => e.name === 'Do Not Eat')
+    expect(doNotEat?.examples?.length).toBe(6)
+
+    const idNote = BEETLE_GUIDE.extraNotes?.find((n) => n.heading.includes('Identification'))
+    expect(idNote?.text).toMatch(/color alone/)
+  })
+})
+
+describe('CATERPILLAR_GUIDE', () => {
+  it('has a title, a non-empty intro, and at least one status entry', () => {
+    expect(CATERPILLAR_GUIDE.title.length).toBeGreaterThan(0)
+    expect(CATERPILLAR_GUIDE.intro?.length).toBeGreaterThan(0)
+    expect(CATERPILLAR_GUIDE.statusEntries.length).toBeGreaterThan(0)
+  })
+
+  it('gives the never-eat-an-unidentified-caterpillar rule and the no-cooking-does-not-detoxify warning', () => {
+    expect(CATERPILLAR_GUIDE.intro).toMatch(/Never eat an unidentified caterpillar/)
+    expect(CATERPILLAR_GUIDE.intro).toMatch(/Do not assume cooking makes a toxic caterpillar safe/)
+  })
+
+  it('flags the six dangerous/venomous caterpillars and covers every guide-only larva group', () => {
+    const dangerous = CATERPILLAR_GUIDE.statusEntries.find((e) => e.name === 'Caterpillars You Should NOT Eat')
+    expect(dangerous?.examples?.length).toBe(6)
+    expect(dangerous?.examples?.some((e) => /Puss caterpillars/.test(e))).toBe(true)
+
+    for (const name of CATERPILLAR_GUIDE_ONLY) {
+      const entry = CATERPILLAR_GUIDE.statusEntries.find((e) => e.name === name)
+      expect(entry, `expected a CATERPILLAR_GUIDE entry for ${name}`).toBeDefined()
+    }
+  })
+
+  it('tells readers to leave wild butterfly caterpillars alone', () => {
+    const butterflyLarvae = CATERPILLAR_GUIDE.statusEntries.find((e) => e.name === 'Butterfly Larvae')
+    expect(butterflyLarvae?.status).toMatch(/leave wild butterfly caterpillars alone/i)
+  })
+})
+
 describe('RECIPE_SAFETY_RULES', () => {
   it('is a non-empty list of non-empty strings', () => {
     expect(RECIPE_SAFETY_RULES.length).toBeGreaterThan(0)
@@ -347,9 +466,11 @@ describe('RECIPE_CATEGORIES', () => {
 })
 
 describe('getCategoryRecipes', () => {
-  it('returns only recipes for the requested category, one per named insect', () => {
+  it('returns only recipes for the requested category, matching the total recipe count for Insects', () => {
     const insects = getCategoryRecipes(RECIPES, 'Insects')
-    expect(insects.length).toBe(INSECTS.length)
+    const expectedCount = RECIPES.filter((r) => r.category === 'Insects').length
+    expect(insects.length).toBe(expectedCount)
+    expect(insects.length).toBeGreaterThan(INSECTS.length + BEETLES.length)
   })
 
   it('never returns an A-Z-only animal for any category', () => {
@@ -377,7 +498,7 @@ describe('groupRecipesByLetter', () => {
     expect(grouped.D?.some((r) => r.animal === 'Deer')).toBe(true)
     // Birds, fish, frogs, lizards, turtles, snakes, crawfish, and mussels belong to their
     // dedicated category sections now, not the A-Z letter groups.
-    for (const animal of [...BIRDS, ...FISH, ...FROGS, 'Skink', 'Snapping Turtle', 'Rattlesnake', ...CRAWFISH, ...MUSSELS, ...INSECTS]) {
+    for (const animal of [...BIRDS, ...FISH, ...FROGS, 'Skink', 'Snapping Turtle', 'Rattlesnake', ...CRAWFISH, ...MUSSELS, ...INSECTS, ...BEETLES, ...CATERPILLAR_BATCH_ANIMALS]) {
       const inAnyLetterGroup = Object.values(grouped).some((letterRecipes) => letterRecipes.some((r) => r.animal === animal))
       expect(inAnyLetterGroup, `expected ${animal} to be excluded from the A-Z index`).toBe(false)
     }
