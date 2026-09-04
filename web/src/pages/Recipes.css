@@ -1,0 +1,283 @@
+.recipe-safety-card {
+  margin-bottom: 1.75rem;
+}
+
+.recipe-safety-card h2 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--danger);
+}
+
+.recipe-safety-list {
+  margin: 0;
+  padding-left: 1.3rem;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.recipe-safety-list li {
+  margin-bottom: 0.4rem;
+}
+
+.protected-birds-card {
+  margin-bottom: 1.75rem;
+  border-color: var(--danger);
+}
+
+.protected-birds-card h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--danger);
+}
+
+.protected-birds-intro {
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  margin-bottom: 0.75rem;
+}
+
+.protected-birds-rule {
+  font-size: 0.88rem;
+  color: var(--accent-2);
+  font-weight: 600;
+  margin: 1rem 0 0;
+}
+
+.fish-safety-card {
+  margin-bottom: 1.25rem;
+  border-color: var(--danger);
+}
+
+.fish-safety-card h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  color: var(--danger);
+}
+
+.fish-safety-card p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: 0 0 0.5rem;
+}
+
+.fish-safety-rule {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.frog-safety-card {
+  margin: 1.25rem 0;
+  border-color: var(--danger);
+}
+
+.frog-safety-card h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  color: var(--danger);
+}
+
+.frog-safety-card p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: 0 0 0.5rem;
+}
+
+.frog-toads-warning {
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.frog-additional-species {
+  font-style: italic;
+}
+
+.animal-group-guide-card {
+  margin: 1.25rem 0;
+  border-color: var(--danger);
+}
+
+.animal-group-guide-card h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  color: var(--danger);
+}
+
+.animal-group-guide-card > p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: 0 0 0.75rem;
+}
+
+.species-status-entry {
+  margin-bottom: 0.85rem;
+}
+
+.species-status-entry p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: 0.2rem 0 0;
+}
+
+.recipes-category-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  padding: 0.75rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.recipes-category-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--accent);
+  border: 1px solid var(--border-bright);
+}
+
+.recipes-category-link:hover {
+  background: var(--bg-card);
+}
+
+.recipes-category-section {
+  margin-bottom: 3rem;
+  scroll-margin-top: 1rem;
+}
+
+.recipes-category-heading {
+  font-size: 1.4rem;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.recipes-az-heading {
+  font-size: 1.4rem;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.recipes-az-intro {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+}
+
+.recipes-alpha-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 2rem;
+  padding: 0.75rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+}
+
+.recipes-alpha-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--accent);
+  border: 1px solid var(--border-bright);
+}
+
+.recipes-alpha-link:hover {
+  background: var(--bg-card);
+}
+
+.recipes-alpha-link-empty {
+  color: var(--text-faint);
+  border-color: transparent;
+  opacity: 0.4;
+}
+
+.recipes-letter-section {
+  margin-bottom: 2rem;
+  scroll-margin-top: 1rem;
+}
+
+.recipes-letter-heading {
+  font-size: 1.4rem;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.recipes-animal-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.recipe-card h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.recipe-intro {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 0.6rem;
+  font-style: italic;
+}
+
+.recipe-caution {
+  font-size: 0.85rem;
+  color: var(--danger);
+  background: rgba(217, 105, 95, 0.08);
+  border: 1px solid rgba(217, 105, 95, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.recipe-subheading {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  margin-top: 0.6rem;
+  margin-bottom: 0.3rem;
+}
+
+.recipe-list {
+  margin: 0 0 0.5rem;
+  padding-left: 1.3rem;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.recipe-list li {
+  margin-bottom: 0.3rem;
+}
+
+.recipe-tip {
+  font-size: 0.82rem;
+  color: var(--accent-2);
+  margin-top: 0.6rem;
+}
