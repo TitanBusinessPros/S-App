@@ -56,6 +56,23 @@
   white-space: nowrap;
 }
 
+.shell-tier-badge {
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.shell-tier-badge:hover {
+  border-color: var(--accent);
+}
+
+.shell-admin-link {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
 .shell-main {
   flex: 1;
   width: 100%;

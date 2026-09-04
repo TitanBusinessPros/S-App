@@ -15,6 +15,27 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Billing bookkeeping (see functions/src/billing.ts). All three are
+    // written only by the Admin SDK — clients never read or write them
+    // directly, so a compromised client can never grant itself gold/premium
+    // or tamper with the Stripe customer/user mapping.
+    //   pendingGoldGrants/{lowercasedEmail} — an admin pre-granted gold to
+    //     an email with no account yet; applied on that email's first sign-in.
+    //   stripeCustomers/{stripeCustomerId} -> { uid } — lets subscription
+    //     webhook events (keyed only by Stripe customer id) find the right
+    //     user without calling back into the Stripe API.
+    //   stripeOrphanPayments/{checkoutSessionId} — a completed checkout the
+    //     webhook couldn't match to any user, kept for manual reconciliation.
+    match /pendingGoldGrants/{email} {
+      allow read, write: if false;
+    }
+    match /stripeCustomers/{customerId} {
+      allow read, write: if false;
+    }
+    match /stripeOrphanPayments/{sessionId} {
+      allow read, write: if false;
+    }
+
     // Shared, nationwide USGS water-area cache (see functions/src/water.ts).
     // Any signed-in user may read it; only the Admin SDK (Cloud Functions,
     // which bypasses these rules entirely) may write it, so ordinary

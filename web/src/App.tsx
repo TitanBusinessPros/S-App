@@ -1,7 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './lib/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { AdminRoute } from './components/AdminRoute'
 import { Login } from './pages/Login'
+import { Upgrade } from './pages/Upgrade'
+import { Admin } from './pages/Admin'
 import { Dashboard } from './pages/Dashboard'
 import { Compass } from './pages/Compass'
 import { MapWater } from './pages/MapWater'
@@ -96,6 +99,24 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Recipes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/upgrade"
+            element={
+              <ProtectedRoute>
+                <Upgrade />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/admin"
+            element={
+              <ProtectedRoute>
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
               </ProtectedRoute>
             }
           />
