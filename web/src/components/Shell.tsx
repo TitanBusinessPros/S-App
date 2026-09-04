@@ -2,11 +2,13 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { useUserProfile } from '../lib/useUserProfile'
+import { useInstallPrompt } from '../lib/useInstallPrompt'
 import './Shell.css'
 
 export function Shell({ children }: { children: ReactNode }) {
   const { user, logOut } = useAuth()
   const { profile } = useUserProfile()
+  const { canInstall, promptInstall } = useInstallPrompt()
 
   return (
     <div className="shell">
@@ -21,6 +23,11 @@ export function Shell({ children }: { children: ReactNode }) {
           <span className={`badge ${profile?.tier === 'premium' ? 'badge-premium' : ''}`}>
             {profile?.tier === 'premium' ? 'Premium' : 'Free'}
           </span>
+          {canInstall && (
+            <button type="button" className="btn btn-primary shell-install" onClick={promptInstall}>
+              📲 Install app
+            </button>
+          )}
           {user?.photoURL && (
             <img className="shell-avatar" src={user.photoURL} alt={user.displayName ?? 'Account'} />
           )}

@@ -1,6 +1,11 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  CACHE_SIZE_UNLIMITED,
+} from 'firebase/firestore'
 import { getFunctions } from 'firebase/functions'
 
 // Firebase web config. The apiKey here is a public client identifier, not a
@@ -19,7 +24,20 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
-export const db = getFirestore(app)
+
+// Offline-first: persist Firestore reads/writes to IndexedDB with no size
+// cap, so a user's saved water areas (see savedWaterAreas.ts) survive
+// across sessions instead of being evicted by Firestore's default LRU
+// cache limit. Note: this doesn't protect against the browser/OS clearing
+// site data under its own storage pressure — that's disclosed in the UI,
+// not something a web app can prevent.
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager(),
+    cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+  }),
+})
+
 export const functions = getFunctions(app)
 
 // Google is the ONLY sign-in method for this app — no email/password.

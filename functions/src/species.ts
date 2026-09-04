@@ -91,12 +91,21 @@ export const getSpeciesNearby = onCall({ invoker: "public" }, async (request) =>
     }),
   );
 
-  const species = inSeason.filter((_, i) => confirmedFlags[i]);
+  // Every in-season curated entry is always included — GBIF confirmation
+  // is a per-entry trust label, not a category-wide filter. Hiding an
+  // entire category's other entries just because one happened to get a
+  // GBIF hit nearby (e.g. showing only one of five in-season dangerous
+  // animals) understated the curated reference for no real reason; each
+  // entry is honestly labeled "confirmed: false" (regionally documented,
+  // not confirmed nearby) rather than implying a sighting that was never
+  // verified — but it's still shown.
+  const species = inSeason.map((entry, i) => ({ ...entry, confirmed: confirmedFlags[i] }));
 
   logger.info("getSpeciesNearby: success", {
     month,
     radiusMiles: clampedRadius,
-    matched: species.length,
+    confirmed: species.filter((s) => s.confirmed).length,
+    fallback: species.filter((s) => !s.confirmed).length,
     checked: inSeason.length,
   });
 

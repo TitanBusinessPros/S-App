@@ -2,6 +2,7 @@ import { httpsCallable } from 'firebase/functions'
 import { functions } from './firebase'
 import type { GetWaterFeaturesResult } from './water'
 import type { GetSpeciesNearbyResult } from './species'
+import type { GetLocationNameResult } from './location'
 
 export async function fetchWaterFeatures(
   lat: number,
@@ -27,5 +28,11 @@ export async function fetchSpeciesNearby(
     GetSpeciesNearbyResult
   >(functions, 'getSpeciesNearby')
   const result = await call({ lat, lng, radiusMiles, month })
+  return result.data
+}
+
+export async function fetchLocationName(lat: number, lng: number): Promise<GetLocationNameResult> {
+  const call = httpsCallable<{ lat: number; lng: number }, GetLocationNameResult>(functions, 'getLocationName')
+  const result = await call({ lat, lng })
   return result.data
 }

@@ -26,14 +26,10 @@ export default defineConfig({
         background_color: '#1b1b1b',
         display: 'standalone',
         start_url: '/',
-        // Placeholder icon using the default favicon so the manifest is
-        // valid out of the box. Swap in real app icons (192/512 PNG) later.
         icons: [
-          {
-            src: 'favicon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-          },
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
     }),
