@@ -22,3 +22,10 @@ ui-debug.log
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local-only source assets and notes — not part of the app. The app icon
+# generated from App-Icon.png already lives in web/public/ and is what's
+# actually deployed; these are just the raw inputs/scratch files.
+/App-Icon.png
+/favicon.zip
+/How to open app from power shell.txt
