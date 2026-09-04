@@ -7,3 +7,4 @@ export { createUserProfile } from "./auth";
 export { getWaterFeatures } from "./water";
 export { getSpeciesNearby } from "./species";
 export { getLocationName } from "./location";
+export { grantGoldMembership, backfillTrialTiers, stripeWebhook } from "./billing";

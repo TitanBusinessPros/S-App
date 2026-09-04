@@ -1,14 +1,25 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
-import { useUserProfile } from '../lib/useUserProfile'
+import { useEntitlement } from '../lib/entitlement'
 import { useInstallPrompt } from '../lib/useInstallPrompt'
+import { ADMIN_EMAIL } from '../lib/constants'
 import './Shell.css'
+
+const TIER_LABEL: Record<string, string> = {
+  gold: 'Gold',
+  premium: 'Premium',
+  trial: 'Trial',
+  free: 'Free',
+}
 
 export function Shell({ children }: { children: ReactNode }) {
   const { user, logOut } = useAuth()
-  const { profile } = useUserProfile()
+  const { tier, isTrialing, trialDaysLeft } = useEntitlement()
   const { canInstall, promptInstall } = useInstallPrompt()
+  const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL
+
+  const isPaidTier = tier === 'gold' || tier === 'premium'
 
   return (
     <div className="shell">
@@ -20,9 +31,15 @@ export function Shell({ children }: { children: ReactNode }) {
         </Link>
 
         <div className="shell-user">
-          <span className={`badge ${profile?.tier === 'premium' ? 'badge-premium' : ''}`}>
-            {profile?.tier === 'premium' ? 'Premium' : 'Free'}
-          </span>
+          <Link to="/app/upgrade" className={`badge shell-tier-badge ${isPaidTier ? 'badge-premium' : ''}`}>
+            {tier ? TIER_LABEL[tier] : 'Free'}
+            {isTrialing && trialDaysLeft !== null ? ` · ${trialDaysLeft}d` : ''}
+          </Link>
+          {isAdmin && (
+            <Link to="/app/admin" className="btn shell-admin-link">
+              🛠️ Admin
+            </Link>
+          )}
           {canInstall && (
             <button type="button" className="btn btn-primary shell-install" onClick={promptInstall}>
               📲 Install app

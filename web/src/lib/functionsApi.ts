@@ -36,3 +36,24 @@ export async function fetchLocationName(lat: number, lng: number): Promise<GetLo
   const result = await call({ lat, lng })
   return result.data
 }
+
+export interface GrantGoldMembershipResult {
+  granted: boolean
+  pending: boolean
+}
+
+export async function grantGoldMembership(email: string): Promise<GrantGoldMembershipResult> {
+  const call = httpsCallable<{ email: string }, GrantGoldMembershipResult>(functions, 'grantGoldMembership')
+  const result = await call({ email })
+  return result.data
+}
+
+export interface BackfillTrialTiersResult {
+  updated: number
+}
+
+export async function backfillTrialTiers(): Promise<BackfillTrialTiersResult> {
+  const call = httpsCallable<Record<string, never>, BackfillTrialTiersResult>(functions, 'backfillTrialTiers')
+  const result = await call({})
+  return result.data
+}
