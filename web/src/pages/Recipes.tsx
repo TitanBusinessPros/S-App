@@ -12,6 +12,7 @@ import {
   CATERPILLAR_GUIDE,
   ANT_GUIDE,
   BEE_WASP_GUIDE,
+  OTHER_INSECTS_GUIDE,
   LIZARD_GUIDE,
   TURTLE_GUIDE,
   SNAKE_GUIDE,
@@ -215,6 +216,7 @@ const CATEGORY_GUIDES: Record<RecipeCategory, React.ReactNode> = {
       <AnimalGroupGuideCard guide={CATERPILLAR_GUIDE} />
       <AnimalGroupGuideCard guide={ANT_GUIDE} />
       <AnimalGroupGuideCard guide={BEE_WASP_GUIDE} />
+      <AnimalGroupGuideCard guide={OTHER_INSECTS_GUIDE} />
     </>
   ),
 }

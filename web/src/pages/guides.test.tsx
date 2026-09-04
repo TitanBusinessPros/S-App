@@ -217,4 +217,17 @@ describe('RecipesContent', () => {
     expect(screen.getByText(/Never eat an unidentified bee or wasp/)).toBeInTheDocument()
     expect(screen.getByText(/harvest active hornet nests/)).toBeInTheDocument()
   })
+
+  it('renders the cicada/dragonfly/termite/water-bug recipes and the other-insects safety guide within the Insects section', () => {
+    render(<RecipesContent />)
+    expect(screen.getByText(/Classic Roasted Cicadas/)).toBeInTheDocument()
+    expect(screen.getByText(/Cicada Flour\/Protein Powder/)).toBeInTheDocument()
+    expect(screen.getByText(/Crispy Dragonfly Nymphs/)).toBeInTheDocument()
+    expect(screen.getByText(/Termite Fried Rice/)).toBeInTheDocument()
+    expect(screen.getByText(/Roasted Giant Water Bugs/)).toBeInTheDocument()
+    expect(screen.getByText(/Spicy Roasted Insect Mix/)).toBeInTheDocument()
+    expect(screen.getByText(/Other Insects — Safety & Species Status/)).toBeInTheDocument()
+    expect(screen.getByText(/Identify the insect before eating it/)).toBeInTheDocument()
+    expect(screen.getByText(/never eat an unidentified stink bug/i)).toBeInTheDocument()
+  })
 })
