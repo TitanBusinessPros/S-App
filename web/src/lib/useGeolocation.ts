@@ -3,6 +3,8 @@ import { useCallback, useState } from 'react'
 export interface Coords {
   lat: number
   lng: number
+  /** Meters, per the browser's Geolocation API — null if unavailable. */
+  accuracy: number | null
 }
 
 export function useGeolocation() {
@@ -19,7 +21,11 @@ export function useGeolocation() {
     setError(null)
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        setCoords({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy ?? null,
+        })
         setLoading(false)
       },
       () => {

@@ -110,7 +110,7 @@ describe("getSpeciesNearby", () => {
     ).rejects.toThrow(/month must be between/);
   });
 
-  it("only calls GBIF for in-season species, and only returns ones GBIF confirms", async () => {
+  it("only calls GBIF for in-season species, and labels the confirmed one", async () => {
     // Every species active in month 1 (January) — a small, deterministic set.
     const januaryEntries = SPECIES_DATA.filter((e: { activeMonths: number[] }) => e.activeMonths.includes(1));
     expect(januaryEntries.length).toBeGreaterThan(0);
@@ -128,19 +128,54 @@ describe("getSpeciesNearby", () => {
 
     // Only species active in January are ever queried.
     expect(fetchMock).toHaveBeenCalledTimes(januaryEntries.length);
-    // Only the GBIF-confirmed one comes back.
-    expect(result.species).toHaveLength(1);
-    expect(result.species[0].id).toBe(januaryEntries[0].id);
+
+    const confirmedEntry = result.species.find((s: { id: string }) => s.id === januaryEntries[0].id);
+    expect(confirmedEntry.confirmed).toBe(true);
     expect(result.radiusMiles).toBe(10);
     expect(result.month).toBe(1);
   });
 
-  it("excludes a species whose GBIF lookup fails, without failing the whole request", async () => {
+  it("includes every in-season entry in a category even when only one sibling in that category is GBIF-confirmed", async () => {
+    // Regression guard: a category with several curated entries used to
+    // collapse down to only the one that happened to get a GBIF hit,
+    // hiding the rest entirely (e.g. showing only one of five in-season
+    // dangerous animals). tree-wood has multiple January-active entries,
+    // making it a good case to prove the others are no longer dropped.
+    const januaryEntries = SPECIES_DATA.filter((e: { activeMonths: number[] }) => e.activeMonths.includes(1));
+    const treeWoodJan = januaryEntries.filter((e: { category: string }) => e.category === "tree-wood");
+    expect(treeWoodJan.length).toBeGreaterThan(1);
+
+    const fetchMock = jest.fn().mockImplementation((url: string) => {
+      const requestedName = new URL(url).searchParams.get("scientificName");
+      const confirm = requestedName === treeWoodJan[0].scientificName; // confirm only the first
+      return Promise.resolve({ ok: true, json: async () => ({ count: confirm ? 1 : 0 }) });
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const wrapped = testEnv.wrap(getSpeciesNearby);
+    const result = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 } });
+
+    // Nothing is dropped just because a sibling in the same category got confirmed.
+    expect(result.species).toHaveLength(januaryEntries.length);
+
+    const resultTreeWood = result.species.filter((s: { category: string }) => s.category === "tree-wood");
+    expect(resultTreeWood).toHaveLength(treeWoodJan.length);
+    expect(resultTreeWood.find((s: { id: string }) => s.id === treeWoodJan[0].id).confirmed).toBe(true);
+    for (const other of treeWoodJan.slice(1)) {
+      expect(resultTreeWood.find((s: { id: string }) => s.id === other.id).confirmed).toBe(false);
+    }
+  });
+
+  it("falls back to all curated entries, labeled unconfirmed, when every GBIF lookup fails", async () => {
+    const januaryEntries = SPECIES_DATA.filter((e: { activeMonths: number[] }) => e.activeMonths.includes(1));
     global.fetch = jest.fn().mockRejectedValue(new Error("network down")) as unknown as typeof fetch;
 
     const wrapped = testEnv.wrap(getSpeciesNearby);
     const result = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 } });
 
-    expect(result.species).toEqual([]);
+    // GBIF being fully unreachable degrades to "show curated content,
+    // honestly unconfirmed" rather than returning nothing.
+    expect(result.species).toHaveLength(januaryEntries.length);
+    expect(result.species.every((s: { confirmed: boolean }) => s.confirmed === false)).toBe(true);
   });
 });

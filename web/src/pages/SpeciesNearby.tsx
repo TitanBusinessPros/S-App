@@ -2,25 +2,28 @@ import { useEffect, useState } from 'react'
 import { Shell } from '../components/Shell'
 import { GuideDisclaimer } from '../components/GuideDisclaimer'
 import { useGeolocation } from '../lib/useGeolocation'
-import { fetchSpeciesNearby } from '../lib/functionsApi'
+import { fetchLocationName, fetchSpeciesNearby } from '../lib/functionsApi'
 import {
   categoryIcon,
   categoryLabel,
   groupByCategory,
   MONTH_NAMES,
-  type SpeciesEntry,
+  type ConfirmedSpeciesEntry,
 } from '../lib/species'
 import { DEFAULT_RADIUS_MILES, MIN_RADIUS_MILES, MAX_RADIUS_MILES } from '../lib/water'
 import '../components/GuidePage.css'
 import './SpeciesNearby.css'
 
-function SpeciesCard({ entry }: { entry: SpeciesEntry }) {
+function SpeciesCard({ entry }: { entry: ConfirmedSpeciesEntry }) {
   const isDanger = entry.category === 'dangerous-animal' || entry.category === 'dangerous-plant'
 
   return (
     <div className={`card species-card ${isDanger ? 'species-danger' : ''}`}>
       <h3>{entry.commonName}</h3>
       <span className="species-scientific">{entry.scientificName}</span>
+      <span className={`badge species-confidence ${entry.confirmed ? 'confirmed' : 'unconfirmed'}`}>
+        {entry.confirmed ? '✅ Confirmed nearby' : '📍 Regionally documented — not confirmed nearby'}
+      </span>
       <p className="species-summary">{entry.summary}</p>
 
       {entry.edibleParts && (
@@ -68,9 +71,10 @@ function SpeciesCard({ entry }: { entry: SpeciesEntry }) {
 export function SpeciesNearby() {
   const { coords, loading: locating, error: locationError, locate } = useGeolocation()
   const [radiusMiles, setRadiusMiles] = useState(DEFAULT_RADIUS_MILES)
-  const [species, setSpecies] = useState<SpeciesEntry[]>([])
+  const [species, setSpecies] = useState<ConfirmedSpeciesEntry[]>([])
   const [fetching, setFetching] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
+  const [locality, setLocality] = useState<string | null>(null)
 
   const month = new Date().getMonth() + 1
 
@@ -102,16 +106,35 @@ export function SpeciesNearby() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coords, radiusMiles, month])
 
+  // Non-fatal, separate from the species fetch above — shown so you can
+  // verify the app resolved your actual location, not tied to whether the
+  // species lookup itself succeeds.
+  useEffect(() => {
+    if (!coords) return
+    let cancelled = false
+    setLocality(null)
+    fetchLocationName(coords.lat, coords.lng)
+      .then((result) => {
+        if (!cancelled) setLocality(result.locality)
+      })
+      .catch(() => {
+        /* keep the generic heading */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [coords])
+
   const groups = groupByCategory(species)
 
   return (
     <Shell>
       <div className="species-header">
-        <h1>Plants, Wildlife &amp; Wood Nearby</h1>
+        <h1>{locality ? `Plants, Wildlife & Wood near ${locality}` : 'Plants, Wildlife & Wood Nearby'}</h1>
         <p>
-          A growing, hand-verified reference — not an exhaustive field guide. Each entry is confirmed present
-          near you via real biodiversity observation data (GBIF), and filtered to what's actually in season
-          right now.
+          A growing, hand-verified reference — not an exhaustive field guide. Filtered to what's in season right
+          now; each entry also shows whether it's been confirmed present nearby via real biodiversity
+          observation data (GBIF), or is regional reference content not yet confirmed at your exact location.
         </p>
       </div>
 
@@ -159,7 +182,7 @@ export function SpeciesNearby() {
 
       {coords && !fetching && !fetchError && groups.length === 0 && (
         <div className="card species-empty">
-          <p>Nothing in our starter dataset was confirmed nearby for this month and radius yet. Try widening the radius.</p>
+          <p>Nothing in our starter dataset is in season this month yet.</p>
         </div>
       )}
 

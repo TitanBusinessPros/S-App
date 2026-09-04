@@ -26,8 +26,19 @@ export interface SpeciesEntry {
   woodUse?: WoodUse
 }
 
+/**
+ * A species entry as returned by getSpeciesNearby: `confirmed: true` means
+ * GBIF has a real nearby occurrence record; `confirmed: false` means this
+ * entry's category had zero confirmed sightings nearby, so it's shown as a
+ * curated, regionally-documented fallback instead of being hidden — never
+ * implying an unverified local sighting.
+ */
+export interface ConfirmedSpeciesEntry extends SpeciesEntry {
+  confirmed: boolean
+}
+
 export interface GetSpeciesNearbyResult {
-  species: SpeciesEntry[]
+  species: ConfirmedSpeciesEntry[]
   radiusMiles: number
   month: number
 }
@@ -59,12 +70,12 @@ export const CATEGORY_ORDER: SpeciesCategory[] = [
   'tree-wood',
 ]
 
-export interface SpeciesGroup {
+export interface SpeciesGroup<T extends SpeciesEntry = SpeciesEntry> {
   category: SpeciesCategory
-  items: SpeciesEntry[]
+  items: T[]
 }
 
-export function groupByCategory(species: SpeciesEntry[]): SpeciesGroup[] {
+export function groupByCategory<T extends SpeciesEntry>(species: T[]): SpeciesGroup<T>[] {
   return CATEGORY_ORDER.map((category) => ({
     category,
     items: species.filter((s) => s.category === category),

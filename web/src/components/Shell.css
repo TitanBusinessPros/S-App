@@ -50,6 +50,12 @@
   font-size: 0.85rem;
 }
 
+.shell-install {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
 .shell-main {
   flex: 1;
   width: 100%;

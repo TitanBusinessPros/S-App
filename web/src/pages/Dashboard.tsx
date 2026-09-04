@@ -19,6 +19,7 @@ const FEATURES: Feature[] = [
   { icon: '⛺', title: 'Shelter Building', description: 'Shelter designs suited to your climate and materials.', to: '/app/shelter' },
   { icon: '💧', title: 'Finding Water', description: 'How to spot, dig for, and collect water in the field.', to: '/app/water-sourcing' },
   { icon: '🪤', title: 'Snares & Traps', description: 'How to build snares to catch small game.', to: '/app/snares' },
+  { icon: '🍳', title: 'Wild Game Recipes', description: 'Field-to-table recipes, indexed A-Z by animal.', to: '/app/recipes' },
 ]
 
 export function Dashboard() {

@@ -14,5 +14,40 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow write: if false;
     }
+
+    // Shared, nationwide USGS water-area cache (see functions/src/water.ts).
+    // Any signed-in user may read it; only the Admin SDK (Cloud Functions,
+    // which bypasses these rules entirely) may write it, so ordinary
+    // clients can never corrupt or poison the shared cache.
+    match /water_area_cache/{cacheKey} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Per-user areas explicitly saved for offline use. Each doc is a
+    // self-contained, denormalized copy of a water-area result (not just a
+    // pointer) so it renders fully offline. Users may only touch their own
+    // docs, and the allowed fields / feature-list size are validated here
+    // so a compromised or buggy client can't write an oversized or
+    // malformed document.
+    match /users/{userId}/savedWaterAreas/{areaId} {
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+             'cacheKey', 'lat', 'lng', 'radiusMiles', 'searchedRadiusMiles',
+             'features', 'count', 'totalFound', 'resultComplete', 'source',
+             'attribution', 'sourceRefreshDate', 'savedAt', 'fetchedAt',
+             'schemaVersion', 'label'
+           ])
+        && request.resource.data.lat is number
+        && request.resource.data.lng is number
+        && request.resource.data.radiusMiles is number
+        && request.resource.data.features is list
+        // Results are capped to the 100 closest features (see
+        // functions/src/water.ts TARGET_COUNT) — 200 leaves headroom
+        // without reopening the door to the old multi-thousand-feature size.
+        && request.resource.data.features.size() <= 200;
+    }
   }
 }

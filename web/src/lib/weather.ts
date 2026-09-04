@@ -7,7 +7,25 @@ export interface DailyForecast {
   weatherCode: number
 }
 
+export interface CurrentConditions {
+  time: string // local ISO string at the forecast location, e.g. "2026-09-02T16:45"
+  temperatureF: number
+  windMph: number
+  weatherCode: number
+}
+
+export interface WeatherResult {
+  current: CurrentConditions
+  daily: DailyForecast[]
+}
+
 interface OpenMeteoResponse {
+  current: {
+    time: string
+    temperature_2m: number
+    windspeed_10m: number
+    weathercode: number
+  }
   daily: {
     time: string[]
     temperature_2m_max: number[]
@@ -30,6 +48,36 @@ export function parseWeatherResponse(json: OpenMeteoResponse): DailyForecast[] {
     windMaxMph: windspeed_10m_max[i],
     weatherCode: weathercode[i],
   }))
+}
+
+export function parseCurrentConditions(json: OpenMeteoResponse): CurrentConditions {
+  return {
+    time: json.current.time,
+    temperatureF: json.current.temperature_2m,
+    windMph: json.current.windspeed_10m,
+    weatherCode: json.current.weathercode,
+  }
+}
+
+/**
+ * Formats Open-Meteo's "current.time" for display. With timezone=auto that
+ * string is a local wall-clock ISO string with no UTC offset (e.g.
+ * "2026-09-02T16:45") — it must NOT be handed to `new Date()`, which would
+ * reinterpret those digits in the browser's own timezone instead of the
+ * forecast location's, silently shifting the displayed hour whenever the
+ * two timezones differ.
+ */
+export function formatCurrentTime(localIsoTime: string): string {
+  const timePart = localIsoTime.split('T')[1]
+  if (!timePart) return localIsoTime
+
+  const [hourStr, minuteStr] = timePart.split(':')
+  const hour = Number(hourStr)
+  if (Number.isNaN(hour)) return localIsoTime
+
+  const period = hour >= 12 ? 'PM' : 'AM'
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12
+  return `${hour12}:${minuteStr} ${period}`
 }
 
 // WMO Weather interpretation codes, per the official table Open-Meteo uses.
@@ -76,10 +124,11 @@ export function formatDayLabel(dateStr: string, index: number): string {
 
 const OPEN_METEO_ENDPOINT = 'https://api.open-meteo.com/v1/forecast'
 
-export async function fetchWeather(lat: number, lng: number): Promise<DailyForecast[]> {
+export async function fetchWeather(lat: number, lng: number): Promise<WeatherResult> {
   const url = new URL(OPEN_METEO_ENDPOINT)
   url.searchParams.set('latitude', String(lat))
   url.searchParams.set('longitude', String(lng))
+  url.searchParams.set('current', 'temperature_2m,windspeed_10m,weathercode')
   url.searchParams.set(
     'daily',
     'temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,weathercode',
@@ -93,5 +142,5 @@ export async function fetchWeather(lat: number, lng: number): Promise<DailyForec
   const response = await fetch(url.toString())
   if (!response.ok) throw new Error('Weather request failed')
   const json = (await response.json()) as OpenMeteoResponse
-  return parseWeatherResponse(json)
+  return { current: parseCurrentConditions(json), daily: parseWeatherResponse(json) }
 }

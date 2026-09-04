@@ -11,6 +11,7 @@ import { Shelter } from './pages/Shelter'
 import { FindingWater } from './pages/FindingWater'
 import { Snares } from './pages/Snares'
 import { SpeciesNearby } from './pages/SpeciesNearby'
+import { Recipes } from './pages/Recipes'
 
 export default function App() {
   return (
@@ -87,6 +88,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <SpeciesNearby />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/recipes"
+            element={
+              <ProtectedRoute>
+                <Recipes />
               </ProtectedRoute>
             }
           />

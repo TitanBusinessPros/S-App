@@ -86,6 +86,19 @@
   font-style: italic;
 }
 
+.species-confidence {
+  align-self: flex-start;
+}
+
+.species-confidence.confirmed {
+  color: var(--accent-2);
+  border-color: var(--accent-2);
+}
+
+.species-confidence.unconfirmed {
+  color: var(--text-dim);
+}
+
 .species-summary {
   font-size: 0.85rem;
 }
