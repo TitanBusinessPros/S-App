@@ -15,8 +15,41 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
+// Chrome only fires `beforeinstallprompt` when it currently considers the
+// site NOT installed — but that check is per page-load, and it's not
+// perfectly reliable (WebAPK registration on Android happens
+// asynchronously and can take several seconds after `userChoice` resolves,
+// so `appinstalled` can arrive late or, on some Chrome/Android
+// combinations, not arrive at all for that session). Without a durable
+// record of "the user already went through install", a later page load —
+// especially one opened from a regular browser tab rather than the
+// installed app's own icon, where `display-mode: standalone` correctly
+// reads false — can see `beforeinstallprompt` fire again and re-offer
+// install even though the app is already on the home screen. Persisting
+// the flag the moment the user accepts closes that gap.
+const INSTALLED_STORAGE_KEY = 'survivalday:pwaInstalled'
+
+function readPersistedInstalled(): boolean {
+  try {
+    return typeof window !== 'undefined' && window.localStorage.getItem(INSTALLED_STORAGE_KEY) === 'true'
+  } catch {
+    // Private browsing / storage blocked — fall back to the in-session signal only.
+    return false
+  }
+}
+
+function persistInstalled() {
+  try {
+    window.localStorage.setItem(INSTALLED_STORAGE_KEY, 'true')
+  } catch {
+    // Ignore — worst case we just fall back to per-session detection.
+  }
+}
+
 let deferredPrompt: BeforeInstallPromptEvent | null = null
-let installed = typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches
+let installed =
+  (typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches) ||
+  readPersistedInstalled()
 const listeners = new Set<() => void>()
 
 function notify() {
@@ -32,6 +65,7 @@ if (typeof window !== 'undefined') {
   window.addEventListener('appinstalled', () => {
     installed = true
     deferredPrompt = null
+    persistInstalled()
     notify()
   })
 }
@@ -43,8 +77,16 @@ export function getInstallState() {
 export async function triggerInstallPrompt() {
   if (!deferredPrompt) return
   await deferredPrompt.prompt()
-  await deferredPrompt.userChoice
+  const { outcome } = await deferredPrompt.userChoice
   deferredPrompt = null
+  // Don't wait on `appinstalled` to hide the button — mark it installed as
+  // soon as the user accepts, since that event can lag behind (or, on some
+  // Android/Chrome versions, silently never fire) while WebAPK generation
+  // finishes in the background.
+  if (outcome === 'accepted') {
+    installed = true
+    persistInstalled()
+  }
   notify()
 }
 
