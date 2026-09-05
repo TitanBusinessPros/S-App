@@ -110,3 +110,16 @@
 .guide-card strong {
   color: var(--text);
 }
+
+.guide-diagram {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1.1rem;
+  margin: 0.75rem 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+  overflow-x: auto;
+  white-space: pre;
+}
