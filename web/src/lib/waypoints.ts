@@ -98,6 +98,24 @@ export function formatDistance(meters: number): string {
   return `${(meters / METERS_PER_MILE).toFixed(2)} mi`
 }
 
+/** Floor for how far you must move before a new breadcrumb point counts —
+ * combined with breadcrumbSpacingThreshold below, this is what stops
+ * standing still from reading as "you walked N feet" when the phone's own
+ * GPS jitters from one fix to the next. */
+export const MIN_BREADCRUMB_SPACING_METERS = 15
+
+/**
+ * How far you need to move from the last recorded point before a new one
+ * counts, given the current fix's own reported accuracy. A GPS fix's
+ * accuracy is the radius of uncertainty around it — two fixes closer
+ * together than that can't be told apart from noise, so the threshold
+ * rises to match whenever the phone reports worse accuracy than the floor
+ * (common indoors, in trees, or between buildings).
+ */
+export function breadcrumbSpacingThreshold(accuracyMeters: number | null): number {
+  return Math.max(MIN_BREADCRUMB_SPACING_METERS, accuracyMeters ?? 0)
+}
+
 /** Sum of consecutive-point distances along a trail, in meters. */
 export function totalTrailDistance(points: BreadcrumbPoint[]): number {
   let total = 0

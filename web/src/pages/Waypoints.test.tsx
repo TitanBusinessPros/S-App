@@ -31,9 +31,9 @@ function mockGeolocation(start: { lat: number; lng: number }) {
     getCurrentPosition,
     watchPosition,
     clearWatch,
-    fireWatch: (lat: number, lng: number) => {
+    fireWatch: (lat: number, lng: number, accuracy = 5) => {
       act(() => {
-        watchCallbacks.forEach((cb) => cb({ coords: { latitude: lat, longitude: lng, accuracy: 5 } }))
+        watchCallbacks.forEach((cb) => cb({ coords: { latitude: lat, longitude: lng, accuracy } }))
       })
     },
   }
@@ -135,6 +135,37 @@ describe('WaypointsContent', () => {
     // ~1.1cm away — well under the 8m minimum spacing, should be dropped.
     geo.fireWatch(35.0000001, -97)
     expect(screen.getByText(/1 point ·/)).toBeInTheDocument()
+  })
+
+  it('does not record fake movement from GPS jitter while standing still with poor accuracy', async () => {
+    // Regression test for a real user report: standing still showed a
+    // recorded distance because a fixed, accuracy-blind threshold treated
+    // ordinary GPS noise as movement.
+    const geo = mockGeolocation({ lat: 35, lng: -97 })
+    render(<WaypointsContent />)
+
+    fireEvent.click(await screen.findByText('▶️ Start Recording'))
+    geo.fireWatch(35, -97, 5)
+    await screen.findByText(/1 point ·/)
+
+    // ~33m of jitter, but the fix itself claims only ±50m accuracy — not
+    // trustworthy evidence of real movement, so it must be rejected.
+    geo.fireWatch(35.0003, -97, 50)
+    expect(screen.getByText(/1 point ·/)).toBeInTheDocument()
+    expect(screen.queryByText(/2 points ·/)).not.toBeInTheDocument()
+  })
+
+  it('still records real movement that exceeds a poor-accuracy fix\'s own threshold', async () => {
+    const geo = mockGeolocation({ lat: 35, lng: -97 })
+    render(<WaypointsContent />)
+
+    fireEvent.click(await screen.findByText('▶️ Start Recording'))
+    geo.fireWatch(35, -97, 5)
+    await screen.findByText(/1 point ·/)
+
+    // ~111m of movement comfortably clears even a noisy ±50m fix.
+    geo.fireWatch(35.001, -97, 50)
+    expect(await screen.findByText(/2 points ·/)).toBeInTheDocument()
   })
 
   it('stops watching GPS when recording is stopped', async () => {

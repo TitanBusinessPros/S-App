@@ -149,6 +149,12 @@
   margin-bottom: 0.75rem;
 }
 
+.waypoints-trail-accuracy {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  margin-bottom: 0.6rem;
+}
+
 .waypoints-trail-stats {
   font-size: 0.85rem;
   color: var(--text-dim);
