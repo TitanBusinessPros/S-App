@@ -244,4 +244,77 @@ describe('WaypointsContent', () => {
     const afterWalkingBack = screen.getByText(/⬅ Back to start:/).textContent
     expect(afterWalkingBack).not.toBe(beforeWalkingBack)
   })
+
+  it('shows how far off the recorded trail you are, distinct from distance back to start', async () => {
+    const geo = mockGeolocation({ lat: 35, lng: -97 })
+    render(<WaypointsContent />)
+
+    fireEvent.click(await screen.findByText('▶️ Start Recording'))
+    geo.fireWatch(35, -97, 5)
+    await screen.findByText(/1 point ·/)
+    // ~111m north — recorded as a second point, giving the trail a segment.
+    geo.fireWatch(35.001, -97, 5)
+    await screen.findByText(/2 points ·/)
+
+    // Stop recording so later position updates check your distance from
+    // the already-recorded path, instead of extending that path — this is
+    // the realistic "am I still on the trail I recorded" use case.
+    fireEvent.click(await screen.findByText('⏹️ Stop Recording'))
+    await screen.findByText('▶️ Start Recording')
+
+    // Standing right on that recorded segment, "off trail" should read 0.
+    geo.fireWatch(35.0005, -97, 5)
+    expect(screen.getByText(/📏 Off trail: 0 ft/)).toBeInTheDocument()
+
+    // Step ~55m sideways (east) off the line — clearly off-trail, even
+    // though you're still roughly between the two recorded points, which
+    // "back to start" alone wouldn't necessarily make obvious.
+    geo.fireWatch(35.0005, -96.9994, 5)
+    const offTrailText = screen.getByText(/📏 Off trail:/).textContent ?? ''
+    // Parse the number rather than string-matching for "not 0 ft" — a
+    // substring check would false-positive on a value like "180 ft", which
+    // itself contains the literal text "0 ft".
+    const feet = Number(offTrailText.match(/Off trail: ([\d.]+) ft/)?.[1])
+    expect(feet).toBeGreaterThan(50)
+  })
+
+  it('refines the trail start if a much more accurate fix arrives before you move away', async () => {
+    // Regression test: a phone's first GPS fix is often its worst. Locking
+    // it in permanently as "Start" makes the whole recorded line look
+    // wrong. A later, more accurate fix that's still within the first
+    // fix's own error margin should refine Start in place instead of
+    // becoming a second point.
+    const geo = mockGeolocation({ lat: 35, lng: -97 })
+    render(<WaypointsContent />)
+
+    fireEvent.click(await screen.findByText('▶️ Start Recording'))
+
+    // First fix: poor accuracy (50m).
+    geo.fireWatch(35, -97, 50)
+    await screen.findByText(/1 point ·/)
+
+    // ~20m away (well within the first fix's 50m error margin) but with
+    // much better accuracy (5m) — refines Start rather than adding a point.
+    geo.fireWatch(35.00018, -97, 5)
+    expect(screen.getByText(/1 point ·/)).toBeInTheDocument()
+
+    // Standing at that same refined location, "back to start" should now
+    // read 0 — proving Start moved to match, not the original bad fix.
+    expect(screen.getByText(/⬅ Back to start: 0 ft/)).toBeInTheDocument()
+  })
+
+  it('does not refine the start point for real movement, only for a more accurate re-read of the same spot', async () => {
+    const geo = mockGeolocation({ lat: 35, lng: -97 })
+    render(<WaypointsContent />)
+
+    fireEvent.click(await screen.findByText('▶️ Start Recording'))
+    geo.fireWatch(35, -97, 50)
+    await screen.findByText(/1 point ·/)
+
+    // ~111m away — well beyond the first fix's 50m accuracy, so this is
+    // real movement, not a refinement of the same spot. It should become a
+    // genuine second point instead of silently replacing Start.
+    geo.fireWatch(35.001, -97, 5)
+    expect(await screen.findByText(/2 points ·/)).toBeInTheDocument()
+  })
 })

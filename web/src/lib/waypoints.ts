@@ -15,6 +15,11 @@ export interface BreadcrumbPoint {
   lat: number
   lng: number
   timestamp: number
+  /** The GPS fix's own reported accuracy (meters) when this point was
+   * recorded, if known — used to refine a trail's starting point away from
+   * a bad first fix (see handleStartRecording in Waypoints.tsx). Optional
+   * because trails saved before this field existed won't have it. */
+  accuracy?: number | null
 }
 
 const WAYPOINTS_KEY = 'survivalday:waypoints'
@@ -143,4 +148,45 @@ export function projectToLocalMeters(
     x: (lng - originLng) * metersPerDegLng,
     y: (lat - originLat) * metersPerDegLat,
   }
+}
+
+/** Shortest distance from point `p` to the line segment a-b, in the same
+ * flat local-meters space as projectToLocalMeters. Standard vector
+ * projection, clamped to the segment (not the infinite line) so the
+ * closest point can't fall past either endpoint. */
+function pointToSegmentDistance(
+  p: { x: number; y: number },
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+): number {
+  const abx = b.x - a.x
+  const aby = b.y - a.y
+  const abLengthSq = abx * abx + aby * aby
+  const t = abLengthSq === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * abx + (p.y - a.y) * aby) / abLengthSq))
+  const closestX = a.x + t * abx
+  const closestY = a.y + t * aby
+  return Math.hypot(p.x - closestX, p.y - closestY)
+}
+
+/**
+ * How far `point` is from the nearest spot on the recorded trail — i.e.
+ * "how many feet off the path am I," as distinct from totalTrailDistance
+ * (how far you've walked) or a straight line back to the start point
+ * (which reads near-zero on a loop trail even if you'd wandered far from
+ * the path mid-walk). Checks every segment of the trail and returns the
+ * smallest distance to any of them, in meters.
+ */
+export function distanceToTrailMeters(point: { lat: number; lng: number }, trail: BreadcrumbPoint[]): number {
+  if (trail.length === 0) return 0
+  const origin = trail[0]
+  const localPoint = projectToLocalMeters(point.lat, point.lng, origin.lat, origin.lng)
+  const localTrail = trail.map((p) => projectToLocalMeters(p.lat, p.lng, origin.lat, origin.lng))
+
+  if (localTrail.length === 1) return Math.hypot(localPoint.x - localTrail[0].x, localPoint.y - localTrail[0].y)
+
+  let closest = Infinity
+  for (let i = 1; i < localTrail.length; i++) {
+    closest = Math.min(closest, pointToSegmentDistance(localPoint, localTrail[i - 1], localTrail[i]))
+  }
+  return closest
 }

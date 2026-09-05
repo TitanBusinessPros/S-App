@@ -161,6 +161,12 @@
   margin-bottom: 0.4rem;
 }
 
+.waypoints-trail-off {
+  font-size: 0.95rem;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+
 .waypoints-trail-back {
   font-size: 0.95rem;
   color: var(--text);

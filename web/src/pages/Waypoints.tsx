@@ -5,6 +5,7 @@ import { headingToCardinal } from '../lib/compass'
 import {
   bearingDegrees,
   breadcrumbSpacingThreshold,
+  distanceToTrailMeters,
   formatDistance,
   haversineMeters,
   loadBreadcrumbTrail,
@@ -157,8 +158,34 @@ export function WaypointsContent() {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
           timestamp: Date.now(),
+          accuracy,
         }
         const current = trailRef.current
+        const first = current[0]
+
+        // A phone's very first GPS fix after acquiring signal is typically
+        // its worst — often 50-100+ meters off — before the receiver
+        // settles. Locking that in permanently as the trail's Start point
+        // makes the whole recorded line look wrong from the first segment
+        // on. So while the trail is still just that first point, a later
+        // fix REPLACES it instead of becoming point 2, but only when it's
+        // both more accurate AND close enough to plausibly be the same
+        // spot refining itself (within the old fix's own error margin) —
+        // otherwise it's real movement, and falls through to the normal
+        // spacing check below.
+        if (
+          current.length === 1 &&
+          accuracy != null &&
+          first.accuracy != null &&
+          accuracy < first.accuracy &&
+          haversineMeters(first.lat, first.lng, point.lat, point.lng) <= first.accuracy
+        ) {
+          trailRef.current = [point]
+          setTrail([point])
+          saveBreadcrumbTrail([point])
+          return
+        }
+
         const last = current[current.length - 1]
         // A GPS fix is only trustworthy to within its own reported
         // accuracy — comparing against a fixed distance regardless of
@@ -290,9 +317,12 @@ export function WaypointsContent() {
             <p>
               Records your path as you walk so you can retrace it. A new point only counts once you've moved
               further than your phone's own GPS accuracy at that moment (at least ~50 ft) — so standing still
-              won't add fake distance, even when GPS is noisy indoors or under tree cover. The "You" marker below
-              tracks your live position the whole time — including after you stop recording — so you can watch
-              it move as you walk back toward Start.
+              won't add fake distance, even when GPS is noisy indoors or under tree cover. The trail's starting
+              point also refines itself for the first few seconds if a more accurate fix comes in, since a
+              phone's very first GPS reading is often its worst. The "You" marker below tracks your live position
+              the whole time — including after you stop recording — so you can watch it move as you walk back
+              toward Start, and "Off trail" shows how far you are from the closest point on the path you've
+              already recorded (not just from the start).
             </p>
 
             <div className="waypoints-trail-controls">
@@ -327,6 +357,10 @@ export function WaypointsContent() {
                 <>
                   <p className="waypoints-trail-stats mono">
                     {trail.length} point{trail.length === 1 ? '' : 's'} · {formatDistance(trailDistanceMeters)} walked
+                  </p>
+
+                  <p className="waypoints-trail-off mono">
+                    📏 Off trail: {formatDistance(distanceToTrailMeters(liveCoords, trail))}
                   </p>
 
                   <p className="waypoints-trail-back mono">
