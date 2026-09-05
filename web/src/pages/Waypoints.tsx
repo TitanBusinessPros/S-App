@@ -66,7 +66,7 @@ function TrailPlot({ trail, current }: { trail: BreadcrumbPoint[]; current: Coor
   )
 }
 
-export function Waypoints() {
+export function WaypointsContent() {
   const { coords, loading: locating, error: locationError, locate } = useGeolocation()
   const [waypoints, setWaypoints] = useState<Waypoint[]>([])
   const [trail, setTrail] = useState<BreadcrumbPoint[]>([])
@@ -169,7 +169,7 @@ export function Waypoints() {
     : waypoints
 
   return (
-    <Shell>
+    <>
       <div className="waypoints-header">
         <h1>📍 GPS Waypoints &amp; Trail</h1>
         <p>Drop a pin at camp or the trailhead, then find your way back — even with no signal, once saved.</p>
@@ -290,6 +290,14 @@ export function Waypoints() {
           </div>
         </>
       )}
+    </>
+  )
+}
+
+export function Waypoints() {
+  return (
+    <Shell>
+      <WaypointsContent />
     </Shell>
   )
 }
