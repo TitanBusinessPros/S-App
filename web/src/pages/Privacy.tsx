@@ -96,10 +96,13 @@ export function Privacy() {
         at any time — see "Contact" below.
       </p>
 
-      <h2>7. Children's Privacy</h2>
+      <h2>7. Age Requirement</h2>
       <p>
-        The Service is not directed to children under 13, and we do not knowingly collect personal information
-        from children under 13.
+        The Service is intended for use by adults age 18 and older only. It is not directed to, and must not be
+        used by, anyone under 18, and we do not knowingly collect personal information from anyone under 18. If
+        you are under 18, do not use the Service or provide us with any personal information. If we learn that
+        we've collected personal information from someone under 18, we will delete it. If you believe a minor
+        has provided us with personal information, please contact us using the information in "Contact" below.
       </p>
 
       <h2>8. Your Choices</h2>
