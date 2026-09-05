@@ -1,0 +1,295 @@
+import { useEffect, useRef, useState } from 'react'
+import { Shell } from '../components/Shell'
+import { useGeolocation, type Coords } from '../lib/useGeolocation'
+import { headingToCardinal } from '../lib/compass'
+import {
+  bearingDegrees,
+  formatDistance,
+  haversineMeters,
+  loadBreadcrumbTrail,
+  loadWaypoints,
+  makeId,
+  projectToLocalMeters,
+  saveBreadcrumbTrail,
+  saveWaypoints,
+  totalTrailDistance,
+  type BreadcrumbPoint,
+  type Waypoint,
+} from '../lib/waypoints'
+import './Waypoints.css'
+
+// Only record a new breadcrumb once you've moved at least this far from the
+// last recorded point — GPS jitter while standing still would otherwise
+// flood storage with near-duplicate points.
+const MIN_BREADCRUMB_SPACING_METERS = 8
+
+function formatTime(epochMs: number): string {
+  return new Date(epochMs).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+}
+
+function TrailPlot({ trail, current }: { trail: BreadcrumbPoint[]; current: Coords }) {
+  const origin = trail[0]
+  const points = trail.map((p) => projectToLocalMeters(p.lat, p.lng, origin.lat, origin.lng))
+  const currentPoint = projectToLocalMeters(current.lat, current.lng, origin.lat, origin.lng)
+  const all = [...points, currentPoint]
+
+  const minX = Math.min(...all.map((p) => p.x))
+  const maxX = Math.max(...all.map((p) => p.x))
+  const minY = Math.min(...all.map((p) => p.y))
+  const maxY = Math.max(...all.map((p) => p.y))
+  const span = Math.max(maxX - minX, maxY - minY, 1)
+
+  const size = 220
+  const padding = 24
+  const scale = (size - padding * 2) / span
+  const cx = (minX + maxX) / 2
+  const cy = (minY + maxY) / 2
+
+  // SVG y grows downward; north (+y in our projection) should read as "up".
+  function toSvg(p: { x: number; y: number }) {
+    return { x: size / 2 + (p.x - cx) * scale, y: size / 2 + (cy - p.y) * scale }
+  }
+
+  const svgPoints = points.map(toSvg)
+  const svgCurrent = toSvg(currentPoint)
+  const polyline = svgPoints.map((p) => `${p.x},${p.y}`).join(' ')
+
+  return (
+    <svg className="trail-plot" viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Breadcrumb trail map">
+      <rect x="0" y="0" width={size} height={size} rx="8" fill="var(--bg-elevated)" stroke="var(--border)" />
+      {svgPoints.length > 1 && <polyline points={polyline} fill="none" stroke="var(--accent-2)" strokeWidth="2" />}
+      <circle cx={svgPoints[0].x} cy={svgPoints[0].y} r="5" fill="var(--accent-bright)" />
+      <text x={svgPoints[0].x + 8} y={svgPoints[0].y + 4} fontSize="10" fill="var(--text-dim)">Start</text>
+      <circle cx={svgCurrent.x} cy={svgCurrent.y} r="5" fill="var(--accent)" />
+      <text x={svgCurrent.x + 8} y={svgCurrent.y + 4} fontSize="10" fill="var(--text-dim)">You</text>
+    </svg>
+  )
+}
+
+export function Waypoints() {
+  const { coords, loading: locating, error: locationError, locate } = useGeolocation()
+  const [waypoints, setWaypoints] = useState<Waypoint[]>([])
+  const [trail, setTrail] = useState<BreadcrumbPoint[]>([])
+  const [label, setLabel] = useState('')
+  const [recording, setRecording] = useState(false)
+  const [trackError, setTrackError] = useState<string | null>(null)
+  const watchIdRef = useRef<number | null>(null)
+  const trailRef = useRef<BreadcrumbPoint[]>([])
+
+  useEffect(() => {
+    locate()
+    setWaypoints(loadWaypoints())
+    const savedTrail = loadBreadcrumbTrail()
+    setTrail(savedTrail)
+    trailRef.current = savedTrail
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Stop watching GPS if the user navigates away mid-recording.
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current)
+    }
+  }, [])
+
+  function handleDropWaypoint() {
+    if (!coords) return
+    const next: Waypoint = {
+      id: makeId(),
+      label: label.trim() || `Waypoint ${waypoints.length + 1}`,
+      lat: coords.lat,
+      lng: coords.lng,
+      createdAt: Date.now(),
+    }
+    const updated = [...waypoints, next]
+    setWaypoints(updated)
+    saveWaypoints(updated)
+    setLabel('')
+  }
+
+  function handleDeleteWaypoint(id: string) {
+    const updated = waypoints.filter((w) => w.id !== id)
+    setWaypoints(updated)
+    saveWaypoints(updated)
+  }
+
+  function handleStartRecording() {
+    if (!('geolocation' in navigator)) {
+      setTrackError('Location is not available on this device.')
+      return
+    }
+    setTrackError(null)
+    setRecording(true)
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const point: BreadcrumbPoint = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          timestamp: Date.now(),
+        }
+        const current = trailRef.current
+        const last = current[current.length - 1]
+        if (last && haversineMeters(last.lat, last.lng, point.lat, point.lng) < MIN_BREADCRUMB_SPACING_METERS) {
+          return
+        }
+        const updated = [...current, point]
+        trailRef.current = updated
+        setTrail(updated)
+        saveBreadcrumbTrail(updated)
+      },
+      () => setTrackError('Location permission was denied.'),
+      { enableHighAccuracy: true },
+    )
+  }
+
+  function handleStopRecording() {
+    if (watchIdRef.current != null) {
+      navigator.geolocation.clearWatch(watchIdRef.current)
+      watchIdRef.current = null
+    }
+    setRecording(false)
+  }
+
+  function handleClearTrail() {
+    handleStopRecording()
+    trailRef.current = []
+    setTrail([])
+    saveBreadcrumbTrail([])
+  }
+
+  const trailStart = trail[0] ?? null
+  const trailDistanceMeters = totalTrailDistance(trail)
+
+  const sortedWaypoints = coords
+    ? [...waypoints].sort(
+        (a, b) =>
+          haversineMeters(coords.lat, coords.lng, a.lat, a.lng) -
+          haversineMeters(coords.lat, coords.lng, b.lat, b.lng),
+      )
+    : waypoints
+
+  return (
+    <Shell>
+      <div className="waypoints-header">
+        <h1>📍 GPS Waypoints &amp; Trail</h1>
+        <p>Drop a pin at camp or the trailhead, then find your way back — even with no signal, once saved.</p>
+      </div>
+
+      <div className="card waypoints-note">
+        Waypoints and your trail are saved only on this device, not synced to your account. Breadcrumb
+        recording only runs while this page stays open with your screen on — phones pause GPS tracking for
+        background browser tabs, so this isn't a substitute for a dedicated GPS device on a long trip.
+      </div>
+
+      {!coords && (
+        <div className="card waypoints-state">
+          {locationError ? <p className="login-error">{locationError}</p> : <p>Locating you…</p>}
+          <button type="button" className="btn btn-primary" onClick={locate}>
+            {locating ? 'Locating…' : 'Try again'}
+          </button>
+        </div>
+      )}
+
+      {coords && (
+        <>
+          <div className="card waypoints-drop">
+            <h2>Drop a Waypoint</h2>
+            <p className="waypoints-coords mono">
+              {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+              {coords.accuracy != null && ` · accurate to ${Math.round(coords.accuracy)} m`}
+            </p>
+            <div className="waypoints-drop-row">
+              <input
+                type="text"
+                className="waypoints-input"
+                placeholder="Camp, Trailhead, Vehicle…"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+              />
+              <button type="button" className="btn btn-primary" onClick={handleDropWaypoint}>
+                Save Waypoint Here
+              </button>
+            </div>
+            <button type="button" className="btn waypoints-relocate" onClick={locate} disabled={locating}>
+              {locating ? 'Locating…' : '🔄 Refresh my location'}
+            </button>
+          </div>
+
+          <div className="card waypoints-list-card">
+            <h2>Saved Waypoints ({waypoints.length})</h2>
+            {waypoints.length === 0 && <p className="waypoints-empty">No waypoints saved yet.</p>}
+            <ul className="waypoints-list">
+              {sortedWaypoints.map((w) => {
+                const distance = haversineMeters(coords.lat, coords.lng, w.lat, w.lng)
+                const bearing = bearingDegrees(coords.lat, coords.lng, w.lat, w.lng)
+                return (
+                  <li key={w.id} className="waypoints-list-item">
+                    <div className="waypoints-list-info">
+                      <span className="waypoints-list-label">{w.label}</span>
+                      <span className="waypoints-list-meta">Saved {formatTime(w.createdAt)}</span>
+                    </div>
+                    <div className="waypoints-list-nav mono">
+                      <span className="waypoints-list-distance">{formatDistance(distance)}</span>
+                      <span className="waypoints-list-bearing">
+                        {Math.round(bearing)}° {headingToCardinal(bearing)}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn waypoints-delete"
+                      onClick={() => handleDeleteWaypoint(w.id)}
+                      aria-label={`Delete ${w.label}`}
+                    >
+                      🗑️
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+
+          <div className="card waypoints-trail-card">
+            <h2>Breadcrumb Trail</h2>
+            <p>
+              Records your path as you walk so you can retrace it. Points closer than about 25 ft apart are
+              skipped so standing still doesn't flood the trail.
+            </p>
+
+            <div className="waypoints-trail-controls">
+              <button
+                type="button"
+                className={`btn ${recording ? 'btn-primary' : ''}`}
+                onClick={recording ? handleStopRecording : handleStartRecording}
+              >
+                {recording ? '⏹️ Stop Recording' : '▶️ Start Recording'}
+              </button>
+              {trail.length > 0 && (
+                <button type="button" className="btn" onClick={handleClearTrail}>
+                  Clear Trail
+                </button>
+              )}
+            </div>
+            {trackError && <p className="login-error">{trackError}</p>}
+
+            {trail.length > 0 && trailStart && (
+              <>
+                <p className="waypoints-trail-stats mono">
+                  {trail.length} point{trail.length === 1 ? '' : 's'} · {formatDistance(trailDistanceMeters)} walked
+                </p>
+
+                <p className="waypoints-trail-back mono">
+                  ⬅ Back to start: {formatDistance(haversineMeters(coords.lat, coords.lng, trailStart.lat, trailStart.lng))}
+                  {' · '}
+                  {Math.round(bearingDegrees(coords.lat, coords.lng, trailStart.lat, trailStart.lng))}°{' '}
+                  {headingToCardinal(bearingDegrees(coords.lat, coords.lng, trailStart.lat, trailStart.lng))}
+                </p>
+
+                <TrailPlot trail={trail} current={coords} />
+              </>
+            )}
+          </div>
+        </>
+      )}
+    </Shell>
+  )
+}
