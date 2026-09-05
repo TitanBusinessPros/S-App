@@ -44,7 +44,7 @@ export function Admin() {
       const result = await backfillTrialTiers()
       setMigrateMessage(
         result.updated > 0
-          ? `✅ Started a fresh 30-day trial for ${result.updated} existing account${result.updated === 1 ? '' : 's'}.`
+          ? `✅ Started a fresh 3-day trial for ${result.updated} existing account${result.updated === 1 ? '' : 's'}.`
           : 'Nothing to migrate — every account already has a trial, subscription, or Gold.',
       )
     } catch (err) {
@@ -89,11 +89,11 @@ export function Admin() {
         <h3>One-time: Start Trials for Prior Sign-Ups</h3>
         <p>
           Accounts created before the paywall shipped have no trial window yet. This gives each of them (everyone
-          who signed up before today) a fresh 30-day trial starting now — a one-time migration, not a promotional
+          who signed up before today) a fresh 3-day trial starting now — a one-time migration, not a promotional
           grant. Safe to run more than once; already-migrated accounts are left alone.
         </p>
         <button type="button" className="btn" onClick={handleMigrate} disabled={migrating}>
-          {migrating ? 'Running…' : 'Start 30-day trials'}
+          {migrating ? 'Running…' : 'Start 3-day trials'}
         </button>
         {migrateMessage && <p className="admin-success">{migrateMessage}</p>}
         {migrateError && <p className="login-error">{migrateError}</p>}

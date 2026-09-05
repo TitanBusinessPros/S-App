@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { Shell } from '../components/Shell'
-import { useAuth } from '../lib/AuthContext'
 import './Dashboard.css'
 
 interface Feature {
@@ -23,13 +22,11 @@ const FEATURES: Feature[] = [
 ]
 
 export function Dashboard() {
-  const { user } = useAuth()
-  const firstName = user?.displayName?.split(' ')[0] ?? 'there'
-
   return (
     <Shell>
       <div className="dash-header">
-        <h1>Welcome back, {firstName}.</h1>
+        <img src="/icon-192.png" alt="Survival Day" className="dash-icon" />
+        <h1>Welcome back</h1>
         <p>Pick a tool below. More features are rolling out as we build them.</p>
       </div>
 

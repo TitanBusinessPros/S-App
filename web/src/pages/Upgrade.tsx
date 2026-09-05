@@ -57,7 +57,6 @@ export function Upgrade() {
               <ul className="upgrade-benefits">
                 <li>🧭 Compass, water &amp; terrain maps, and weather</li>
                 <li>🌿 Species, first aid, shelter, snares &amp; recipes</li>
-                <li>📶 Everything works offline, in the field</li>
               </ul>
 
               <a

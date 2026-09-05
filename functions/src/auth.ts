@@ -12,7 +12,7 @@ import { ADMIN_EMAIL, TRIAL_DURATION_MS } from "./constants";
  *   - An email an admin already pre-granted gold to (see grantGoldMembership
  *     in billing.ts, which queues a pendingGoldGrants doc for anyone who
  *     doesn't have an account yet) gets gold immediately, no trial needed.
- *   - Everyone else gets a 30-day free trial of every feature, tracked via
+ *   - Everyone else gets a 3-day free trial of every feature, tracked via
  *     trialEndsAt. Nothing server-side "expires" it — the client computes
  *     locked-out state itself by comparing against that timestamp (see
  *     web/src/lib/entitlement.ts).

@@ -10,4 +10,4 @@ export const ADMIN_EMAIL = "adonai4you@gmail.com";
  * useEntitlement hook (web/src/lib/entitlement.ts), which is what actually
  * decides "trial expired" by comparing against this timestamp. Nothing
  * server-side needs to run when a trial ends. */
-export const TRIAL_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
+export const TRIAL_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
