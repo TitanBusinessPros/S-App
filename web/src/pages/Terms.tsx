@@ -47,7 +47,15 @@ export function Terms() {
         activity that occurs under your account.
       </p>
 
-      <h2>4. Free Trial, Subscriptions &amp; Billing</h2>
+      <h2>4. Eligibility</h2>
+      <p>
+        The Service is intended for use only by individuals who are at least 18 years old. It is not directed
+        to, and must not be used by, anyone under 18. By using the Service, you represent and warrant that you
+        are 18 or older. If we learn that an account belongs to someone under 18, we may terminate it at any
+        time.
+      </p>
+
+      <h2>5. Free Trial, Subscriptions &amp; Billing</h2>
       <p>
         New accounts receive a free trial period (currently 3 days) with full access to the Service. After the
         trial ends, continued access to paid features requires an active annual subscription (currently
@@ -58,20 +66,20 @@ export function Terms() {
         pricing, or which features require a subscription at any time, with the change applying prospectively.
       </p>
 
-      <h2>5. Acceptable Use</h2>
+      <h2>6. Acceptable Use</h2>
       <p>
         You agree not to misuse the Service, including by attempting to circumvent billing or access controls,
         interfering with the Service's operation, or using it for any unlawful purpose.
       </p>
 
-      <h2>6. Intellectual Property</h2>
+      <h2>7. Intellectual Property</h2>
       <p>
         The Service, including its content, design, and branding, is owned by Titan Business Pros LLC or its
         licensors and is protected by applicable intellectual property laws. You may use the Service for your
         own personal, non-commercial purposes only.
       </p>
 
-      <h2>7. Third-Party Data &amp; Services</h2>
+      <h2>8. Third-Party Data &amp; Services</h2>
       <p>
         The Service displays data from independent third parties, including Open-Meteo (weather), the USGS
         (water features), and GBIF (species occurrence records), and relies on Google (sign-in) and Stripe
@@ -80,7 +88,7 @@ export function Terms() {
         own terms and policies.
       </p>
 
-      <h2>8. Disclaimer of Warranties</h2>
+      <h2>9. Disclaimer of Warranties</h2>
       <p>
         THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED,
         INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, OR
@@ -88,7 +96,7 @@ export function Terms() {
         REAL SURVIVAL OR MEDICAL SITUATION.
       </p>
 
-      <h2>9. Limitation of Liability</h2>
+      <h2>10. Limitation of Liability</h2>
       <p>
         TO THE MAXIMUM EXTENT PERMITTED BY LAW, TITAN BUSINESS PROS LLC AND ITS OWNERS, EMPLOYEES, AND AGENTS
         WILL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY
@@ -98,32 +106,32 @@ export function Terms() {
         BEFORE THE CLAIM AROSE.
       </p>
 
-      <h2>10. Indemnification</h2>
+      <h2>11. Indemnification</h2>
       <p>
         You agree to indemnify and hold harmless Titan Business Pros LLC from any claims, damages, or expenses
         arising from your use of the Service or violation of these Terms.
       </p>
 
-      <h2>11. Termination</h2>
+      <h2>12. Termination</h2>
       <p>
         We may suspend or terminate your access to the Service at any time, for any reason, including a
         violation of these Terms. You may stop using the Service and cancel any subscription at any time.
       </p>
 
-      <h2>12. Changes to These Terms</h2>
+      <h2>13. Changes to These Terms</h2>
       <p>
         We may update these Terms from time to time. Continued use of the Service after a change means you
         accept the updated Terms. We'll update the "Last updated" date above when that happens.
       </p>
 
-      <h2>13. Governing Law</h2>
+      <h2>14. Governing Law</h2>
       <p>
         These Terms are governed by the laws of the State of Oklahoma, without regard to conflict-of-law
         principles, and any dispute will be resolved in the state or federal courts located in Oklahoma County,
         Oklahoma.
       </p>
 
-      <h2>14. Contact</h2>
+      <h2>15. Contact</h2>
       <p>
         Titan Business Pros LLC
         <br />
