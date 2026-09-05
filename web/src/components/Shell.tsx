@@ -4,6 +4,7 @@ import { useAuth } from '../lib/AuthContext'
 import { useEntitlement } from '../lib/entitlement'
 import { useInstallPrompt } from '../lib/useInstallPrompt'
 import { ADMIN_EMAIL } from '../lib/constants'
+import { Footer } from './Footer'
 import './Shell.css'
 
 const TIER_LABEL: Record<string, string> = {
@@ -56,18 +57,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
       <main className="shell-main">{children}</main>
 
-      <footer className="shell-footer">
-        <p>Created by Titan Business Pros LLC</p>
-        <p>
-          <a href="tel:+14059987979">405-998-7979</a>
-          <span aria-hidden="true"> · </span>
-          <a href="https://www.oklahoma.marketing" target="_blank" rel="noreferrer">
-            www.oklahoma.marketing
-          </a>
-        </p>
-        <p>Oklahoma City, OK</p>
-        <p>© 2026 Titan Business Pros LLC. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   )
 }
