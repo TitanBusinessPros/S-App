@@ -17,6 +17,8 @@ export function Footer() {
       <p>Oklahoma City, OK</p>
       <p>
         <Link to="/terms">Terms of Service</Link>
+        <span aria-hidden="true"> · </span>
+        <Link to="/privacy">Privacy Policy</Link>
       </p>
       <p>© 2026 Titan Business Pros LLC. All rights reserved.</p>
     </footer>
