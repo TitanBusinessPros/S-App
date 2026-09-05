@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   bearingDegrees,
   breadcrumbSpacingThreshold,
+  distanceToTrailMeters,
   formatDistance,
   haversineMeters,
   loadBreadcrumbTrail,
@@ -103,6 +104,59 @@ describe('projectToLocalMeters', () => {
     const { x, y } = projectToLocalMeters(1, 0, 0, 0)
     expect(x).toBeCloseTo(0, 6)
     expect(y).toBeGreaterThan(110_000)
+  })
+})
+
+describe('distanceToTrailMeters', () => {
+  it('is 0 for an empty trail', () => {
+    expect(distanceToTrailMeters({ lat: 35, lng: -97 }, [])).toBe(0)
+  })
+
+  it('is the distance to the single point when the trail has only one', () => {
+    const trail: BreadcrumbPoint[] = [{ lat: 0, lng: 0, timestamp: 1 }]
+    const meters = distanceToTrailMeters({ lat: 1, lng: 0 }, trail)
+    // projectToLocalMeters is a flat approximation (see its own docstring),
+    // not exact geodesy, so compare loosely against the true great-circle
+    // distance (as the haversineMeters test above does) rather than
+    // requiring an exact match.
+    expect(meters).toBeGreaterThan(109_000)
+    expect(meters).toBeLessThan(112_000)
+  })
+
+  it('is ~0 for a point sitting on the trail line, between two recorded points', () => {
+    // A straight trail running north from the origin for 1 degree of
+    // latitude; the midpoint should read as right on the trail, not just
+    // near one of the two recorded endpoints.
+    const trail: BreadcrumbPoint[] = [
+      { lat: 0, lng: 0, timestamp: 1 },
+      { lat: 1, lng: 0, timestamp: 2 },
+    ]
+    expect(distanceToTrailMeters({ lat: 0.5, lng: 0 }, trail)).toBeCloseTo(0, 0)
+  })
+
+  it('reflects true perpendicular distance from the path, not distance to the start point', () => {
+    // This is the exact distinction a straight-line "back to start" reading
+    // can't make: standing well off to the side of a trail segment, but
+    // roughly equidistant from both its endpoints (so "back to start" alone
+    // wouldn't obviously flag it), should still read as meaningfully off
+    // the trail.
+    const trail: BreadcrumbPoint[] = [
+      { lat: 0, lng: 0, timestamp: 1 },
+      { lat: 1, lng: 0, timestamp: 2 },
+    ]
+    // ~0.01 degrees of longitude east of the midpoint — off the line.
+    const meters = distanceToTrailMeters({ lat: 0.5, lng: 0.01 }, trail)
+    expect(meters).toBeGreaterThan(500)
+  })
+
+  it('uses the closest segment across a multi-point trail, not just the last one', () => {
+    const trail: BreadcrumbPoint[] = [
+      { lat: 0, lng: 0, timestamp: 1 },
+      { lat: 1, lng: 0, timestamp: 2 },
+      { lat: 1, lng: 1, timestamp: 3 },
+    ]
+    // Right on the first segment, far from the second.
+    expect(distanceToTrailMeters({ lat: 0.5, lng: 0 }, trail)).toBeCloseTo(0, 0)
   })
 })
 
