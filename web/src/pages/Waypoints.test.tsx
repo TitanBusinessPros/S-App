@@ -8,19 +8,25 @@ interface FakePosition {
 
 /** Installs a fake navigator.geolocation and returns handles to drive it —
  * fireWatch() simulates the device reporting a new position to every
- * active watchPosition() callback, exactly like a real GPS update would. */
+ * currently-active watchPosition() callback, exactly like a real GPS update
+ * would. clearWatch() actually unsubscribes (matching real browser
+ * behavior) so tests can tell a stopped watch from a running one, rather
+ * than every callback ever registered staying live forever. */
 function mockGeolocation(start: { lat: number; lng: number }) {
-  const watchCallbacks: Array<(pos: FakePosition) => void> = []
+  const watchCallbacks = new Map<number, (pos: FakePosition) => void>()
   let nextWatchId = 1
 
   const getCurrentPosition = vi.fn((success: (pos: FakePosition) => void) => {
     success({ coords: { latitude: start.lat, longitude: start.lng, accuracy: 5 } })
   })
   const watchPosition = vi.fn((success: (pos: FakePosition) => void) => {
-    watchCallbacks.push(success)
-    return nextWatchId++
+    const id = nextWatchId++
+    watchCallbacks.set(id, success)
+    return id
   })
-  const clearWatch = vi.fn()
+  const clearWatch = vi.fn((id: number) => {
+    watchCallbacks.delete(id)
+  })
 
   Object.defineProperty(navigator, 'geolocation', {
     value: { getCurrentPosition, watchPosition, clearWatch },
@@ -190,5 +196,52 @@ describe('WaypointsContent', () => {
     fireEvent.click(screen.getByText('Clear Trail'))
     expect(screen.queryByText(/walked/)).not.toBeInTheDocument()
     expect(await screen.findByText('▶️ Start Recording')).toBeInTheDocument()
+  })
+
+  it('updates the live "back to start" reading as you move, not just at recorded breadcrumb points', async () => {
+    // Regression test for a real user report: the "You" marker and "back to
+    // start" distance were wired to a one-time location fetch instead of a
+    // live position, so they never moved as you actually walked.
+    const geo = mockGeolocation({ lat: 35, lng: -97 })
+    render(<WaypointsContent />)
+
+    fireEvent.click(await screen.findByText('▶️ Start Recording'))
+    geo.fireWatch(35, -97, 5)
+    await screen.findByText(/1 point ·/)
+
+    // ~111m north — clears the throttle, recorded as a second point.
+    geo.fireWatch(35.001, -97, 5)
+    await screen.findByText(/2 points ·/)
+    const afterSecondPoint = screen.getByText(/⬅ Back to start:/).textContent
+
+    // A further ~5.5m move — under the 15m minimum spacing, so it's NOT
+    // recorded as a new breadcrumb point, but the live marker should still
+    // reflect it.
+    geo.fireWatch(35.00105, -97, 5)
+    expect(screen.getByText(/2 points ·/)).toBeInTheDocument()
+    const afterSmallMove = screen.getByText(/⬅ Back to start:/).textContent
+    expect(afterSmallMove).not.toBe(afterSecondPoint)
+  })
+
+  it('keeps tracking your live position after you stop recording, so you can retrace the trail', async () => {
+    // This is the exact scenario reported: stop recording, then walk back a
+    // different way — the two markers must not stay frozen in place.
+    const geo = mockGeolocation({ lat: 35, lng: -97 })
+    render(<WaypointsContent />)
+
+    fireEvent.click(await screen.findByText('▶️ Start Recording'))
+    geo.fireWatch(35, -97, 5)
+    await screen.findByText(/1 point ·/)
+    geo.fireWatch(35.001, -97, 5)
+    await screen.findByText(/2 points ·/)
+
+    fireEvent.click(await screen.findByText('⏹️ Stop Recording'))
+    await screen.findByText('▶️ Start Recording')
+    const beforeWalkingBack = screen.getByText(/⬅ Back to start:/).textContent
+
+    // Walk back toward the start after recording has already stopped.
+    geo.fireWatch(35.0005, -97, 5)
+    const afterWalkingBack = screen.getByText(/⬅ Back to start:/).textContent
+    expect(afterWalkingBack).not.toBe(beforeWalkingBack)
   })
 })

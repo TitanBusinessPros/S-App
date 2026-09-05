@@ -70,6 +70,7 @@ export function WaypointsContent() {
   const [recording, setRecording] = useState(false)
   const [trackError, setTrackError] = useState<string | null>(null)
   const [liveAccuracy, setLiveAccuracy] = useState<number | null>(null)
+  const [livePosition, setLivePosition] = useState<Coords | null>(null)
   const watchIdRef = useRef<number | null>(null)
   const trailRef = useRef<BreadcrumbPoint[]>([])
 
@@ -88,6 +89,35 @@ export function WaypointsContent() {
       if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current)
     }
   }, [])
+
+  // Keep the "You" marker and "Back to start" readout live for as long as
+  // there's a trail to retrace — not just while actively recording. While
+  // recording, handleStartRecording's own watch already keeps livePosition
+  // current, so this effect stays out of the way (the `recording` guard)
+  // until you stop; the moment you do, it takes over so walking back still
+  // moves the live marker instead of it freezing at whatever "coords" last
+  // happened to be (the exact bug this fixes — see the root README /
+  // git history around "breadcrumb" for the report that led here).
+  useEffect(() => {
+    if (recording || trail.length === 0) return
+    if (!('geolocation' in navigator)) return
+    const id = navigator.geolocation.watchPosition(
+      (pos) => {
+        setLivePosition({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy ?? null,
+        })
+      },
+      () => {
+        // Best-effort secondary watch — the main "coords" flow (via
+        // useGeolocation) already surfaces permission/availability errors,
+        // so this one fails silently rather than showing a second error.
+      },
+      { enableHighAccuracy: true },
+    )
+    return () => navigator.geolocation.clearWatch(id)
+  }, [recording, trail.length])
 
   function handleDropWaypoint() {
     if (!coords) return
@@ -121,6 +151,7 @@ export function WaypointsContent() {
       (pos) => {
         const accuracy = pos.coords.accuracy ?? null
         setLiveAccuracy(accuracy)
+        setLivePosition({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy })
 
         const point: BreadcrumbPoint = {
           lat: pos.coords.latitude,
@@ -259,7 +290,9 @@ export function WaypointsContent() {
             <p>
               Records your path as you walk so you can retrace it. A new point only counts once you've moved
               further than your phone's own GPS accuracy at that moment (at least ~50 ft) — so standing still
-              won't add fake distance, even when GPS is noisy indoors or under tree cover.
+              won't add fake distance, even when GPS is noisy indoors or under tree cover. The "You" marker below
+              tracks your live position the whole time — including after you stop recording — so you can watch
+              it move as you walk back toward Start.
             </p>
 
             <div className="waypoints-trail-controls">
@@ -283,22 +316,30 @@ export function WaypointsContent() {
             )}
             {trackError && <p className="login-error">{trackError}</p>}
 
-            {trail.length > 0 && trailStart && (
-              <>
-                <p className="waypoints-trail-stats mono">
-                  {trail.length} point{trail.length === 1 ? '' : 's'} · {formatDistance(trailDistanceMeters)} walked
-                </p>
+            {trail.length > 0 && trailStart && (() => {
+              // The trail map and "back to start" readout need your *live*
+              // position, not the one-time fix "coords" holds — livePosition
+              // is only null before the very first GPS fix of this visit
+              // has arrived, so "coords" (already non-null in this branch)
+              // is a safe fallback for that brief window.
+              const liveCoords = livePosition ?? coords
+              return (
+                <>
+                  <p className="waypoints-trail-stats mono">
+                    {trail.length} point{trail.length === 1 ? '' : 's'} · {formatDistance(trailDistanceMeters)} walked
+                  </p>
 
-                <p className="waypoints-trail-back mono">
-                  ⬅ Back to start: {formatDistance(haversineMeters(coords.lat, coords.lng, trailStart.lat, trailStart.lng))}
-                  {' · '}
-                  {Math.round(bearingDegrees(coords.lat, coords.lng, trailStart.lat, trailStart.lng))}°{' '}
-                  {headingToCardinal(bearingDegrees(coords.lat, coords.lng, trailStart.lat, trailStart.lng))}
-                </p>
+                  <p className="waypoints-trail-back mono">
+                    ⬅ Back to start: {formatDistance(haversineMeters(liveCoords.lat, liveCoords.lng, trailStart.lat, trailStart.lng))}
+                    {' · '}
+                    {Math.round(bearingDegrees(liveCoords.lat, liveCoords.lng, trailStart.lat, trailStart.lng))}°{' '}
+                    {headingToCardinal(bearingDegrees(liveCoords.lat, liveCoords.lng, trailStart.lat, trailStart.lng))}
+                  </p>
 
-                <TrailPlot trail={trail} current={coords} />
-              </>
-            )}
+                  <TrailPlot trail={trail} current={liveCoords} />
+                </>
+              )
+            })()}
           </div>
         </>
       )}
