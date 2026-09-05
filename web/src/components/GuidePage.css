@@ -111,15 +111,46 @@
   color: var(--text);
 }
 
-.guide-diagram {
+.layer-stack {
+  margin: 0.75rem 0;
+  max-width: 480px;
+}
+
+.layer-stack-cap {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-faint);
+  padding: 0.3rem 0;
+}
+
+.layer-stack-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.3rem 0.75rem;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-2);
   border-radius: var(--radius-sm);
-  padding: 0.9rem 1.1rem;
-  margin: 0.75rem 0;
-  font-size: 0.82rem;
-  line-height: 1.6;
+  padding: 0.6rem 0.9rem;
+}
+
+.layer-stack-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.layer-stack-note {
+  font-size: 0.78rem;
   color: var(--text-dim);
-  overflow-x: auto;
-  white-space: pre;
+  text-align: right;
+}
+
+.layer-stack-arrow {
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 0.85rem;
+  line-height: 1.4;
 }

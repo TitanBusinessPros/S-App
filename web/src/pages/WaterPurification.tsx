@@ -2,19 +2,13 @@ import { Shell } from '../components/Shell'
 import { GuideDisclaimer } from '../components/GuideDisclaimer'
 import '../components/GuidePage.css'
 
-const BOTTLE_DIAGRAM = `[OPEN TOP]
-  ↓
-Coarse rocks/gravel (pre-strain big debris)
-  ↓
-Fine sand (mechanical filtration)
-  ↓
-Crushed hardwood charcoal (adsorption: taste/odor/organics)
-  ↓
-Fine sand (catch charcoal fines)
-  ↓
-Cloth/coffee filter at neck (final barrier)
-  ↓
-[CAP with small holes or no cap, dripping into clean container]`
+const BOTTLE_LAYERS = [
+  { label: 'Coarse rocks / gravel', note: 'Pre-strains big debris' },
+  { label: 'Fine sand', note: 'Mechanical filtration' },
+  { label: 'Crushed hardwood charcoal', note: 'Adsorbs taste, odor, organics' },
+  { label: 'Fine sand', note: 'Catches charcoal fines' },
+  { label: 'Cloth / coffee filter at the neck', note: 'Final barrier' },
+]
 
 export function WaterPurificationContent() {
   return (
@@ -37,7 +31,19 @@ export function WaterPurificationContent() {
         <section className="guide-section card">
           <h2>🧪 Classic Bottle Filter — Layer Diagram</h2>
           <p>Use this layout for any build that says "bottle, cut bottom, layers top→bottom."</p>
-          <pre className="mono guide-diagram">{BOTTLE_DIAGRAM}</pre>
+          <div className="layer-stack">
+            <div className="layer-stack-cap">⬇ Open top — pour water in here</div>
+            {BOTTLE_LAYERS.map((layer, i) => (
+              <div key={layer.label + i}>
+                <div className="layer-stack-row">
+                  <span className="layer-stack-label">{layer.label}</span>
+                  <span className="layer-stack-note">{layer.note}</span>
+                </div>
+                {i < BOTTLE_LAYERS.length - 1 && <div className="layer-stack-arrow">↓</div>}
+              </div>
+            ))}
+            <div className="layer-stack-cap">⬇ Cap with small holes (or no cap) — drips into a clean container</div>
+          </div>
           <p>
             <strong>Assembly, any bottle build:</strong> cut the bottom off, invert the bottle, place cloth in
             the neck, then add layers in the order above, tamp lightly, and drip into a clean pot/bottle.
@@ -45,7 +51,8 @@ export function WaterPurificationContent() {
         </section>
 
         <section className="guide-section card">
-          <h2>🍶 Bottle &amp; Container Builds</h2>
+          <h2>🧰 25 Improvised Water Filters</h2>
+          <p>In order, 1 through 25 — nothing skipped.</p>
         </section>
         <div className="guide-subgrid">
           <div className="guide-card">
@@ -70,53 +77,6 @@ export function WaterPurificationContent() {
           </div>
 
           <div className="guide-card">
-            <h3>8. Coffee-Filter + Sand Mini-Filter</h3>
-            <p><strong>Need:</strong> cut bottle, cone coffee filter, sand, crushed charcoal.</p>
-            <p><strong>Make:</strong> Place a coffee filter in the neck. Add: thin sand → thin charcoal → sand.</p>
-            <p><strong>Use:</strong> Drip into a clean container; disinfect.</p>
-          </div>
-
-          <div className="guide-card">
-            <h3>9. Cotton-Ball Plug Filter</h3>
-            <p><strong>Need:</strong> bottle, cotton balls, sand, charcoal, cloth.</p>
-            <p><strong>Make:</strong> Pack cotton balls tightly in the neck. Add sand → charcoal → sand above.</p>
-            <p><strong>Use:</strong> Pour water in the top; collect drips; disinfect.</p>
-          </div>
-
-          <div className="guide-card">
-            <h3>17. Dual-Stage Bottle (Mechanical Then Adsorptive)</h3>
-            <p><strong>Need:</strong> 2 bottles, cloth, gravel, sand, charcoal.</p>
-            <p><strong>Make:</strong> Bottle A: gravel → sand (mechanical). Bottle B: charcoal → sand (adsorptive).</p>
-            <p><strong>Use:</strong> Pour through A, then B; collect and disinfect.</p>
-          </div>
-
-          <div className="guide-card">
-            <h3>18. Pot-and-Cloth Drip Filter</h3>
-            <p><strong>Need:</strong> pot, clean cloth, sand, charcoal, cord.</p>
-            <p><strong>Make:</strong> Secure cloth over the pot mouth with cord; add sand → charcoal → sand on top of the cloth.</p>
-            <p><strong>Use:</strong> Pour water onto the layers; collect in the pot; disinfect.</p>
-          </div>
-
-          <div className="guide-card">
-            <h3>20. Tin-Can Filter</h3>
-            <p><strong>Need:</strong> clean tin can, nail/awl, cloth, sand, charcoal.</p>
-            <p><strong>Make:</strong> Punch many small holes in the bottom. Line the inside bottom with cloth. Fill: sand → charcoal → sand.</p>
-            <p><strong>Use:</strong> Suspend over a container; pour; disinfect the drips.</p>
-          </div>
-
-          <div className="guide-card">
-            <h3>22. Paper-Towel Cone Filter (Short-Term Clarity)</h3>
-            <p><strong>Need:</strong> cut bottle, paper towels, sand, charcoal.</p>
-            <p><strong>Make:</strong> Form a thick cone of paper towels in the neck; add sand → charcoal → sand.</p>
-            <p><strong>Use:</strong> Drip into a container; replace the paper when soggy; disinfect.</p>
-          </div>
-        </div>
-
-        <section className="guide-section card">
-          <h2>🌿 Natural Material Builds</h2>
-        </section>
-        <div className="guide-subgrid">
-          <div className="guide-card">
             <h3>4. Bamboo Stem Filter</h3>
             <p><strong>Need:</strong> thick bamboo section (~12–18"), knife, cord, cloth, sand, charcoal, fine grass/moss.</p>
             <p><strong>Make:</strong> Cut a node to make a tube. Tie cloth over the bottom end. Fill: grass/moss → sand → charcoal → sand.</p>
@@ -135,6 +95,27 @@ export function WaterPurificationContent() {
             <p><strong>Need:</strong> pliable bark (birch best), cord, cloth, sand, charcoal.</p>
             <p><strong>Make:</strong> Form a cone from bark; stitch/tie the seam. Tie cloth at the tip. Fill: fine grass → sand → charcoal → sand.</p>
             <p><strong>Use:</strong> Hang and drip into a pot; disinfect.</p>
+          </div>
+
+          <div className="guide-card">
+            <h3>7. T-Shirt/Bandana Pre-Filter</h3>
+            <p><strong>Need:</strong> clean T-shirt/bandana, container.</p>
+            <p><strong>Make:</strong> Stretch cloth over the container mouth; secure with cord/rubber band.</p>
+            <p><strong>Use:</strong> Pour cloudy water through to remove grit; then run through a finer filter and disinfect.</p>
+          </div>
+
+          <div className="guide-card">
+            <h3>8. Coffee-Filter + Sand Mini-Filter</h3>
+            <p><strong>Need:</strong> cut bottle, cone coffee filter, sand, crushed charcoal.</p>
+            <p><strong>Make:</strong> Place a coffee filter in the neck. Add: thin sand → thin charcoal → sand.</p>
+            <p><strong>Use:</strong> Drip into a clean container; disinfect.</p>
+          </div>
+
+          <div className="guide-card">
+            <h3>9. Cotton-Ball Plug Filter</h3>
+            <p><strong>Need:</strong> bottle, cotton balls, sand, charcoal, cloth.</p>
+            <p><strong>Make:</strong> Pack cotton balls tightly in the neck. Add sand → charcoal → sand above.</p>
+            <p><strong>Use:</strong> Pour water in the top; collect drips; disinfect.</p>
           </div>
 
           <div className="guide-card">
@@ -159,52 +140,6 @@ export function WaterPurificationContent() {
           </div>
 
           <div className="guide-card">
-            <h3>19. Gourd/Coconut Shell Filter</h3>
-            <p><strong>Need:</strong> hollowed gourd or coconut shell, cloth, sand, charcoal, grass.</p>
-            <p><strong>Make:</strong> Plug the opening with cloth; fill: grass → sand → charcoal → sand.</p>
-            <p><strong>Use:</strong> Hang and drip; disinfect.</p>
-          </div>
-        </div>
-
-        <section className="guide-section card">
-          <h2>🪨 Pre-Filters &amp; Coarse Sediment Filters</h2>
-          <p>Use these first on very cloudy or muddy water, then run the output through a finer filter above.</p>
-        </section>
-        <div className="guide-subgrid">
-          <div className="guide-card">
-            <h3>7. T-Shirt/Bandana Pre-Filter</h3>
-            <p><strong>Need:</strong> clean T-shirt/bandana, container.</p>
-            <p><strong>Make:</strong> Stretch cloth over the container mouth; secure with cord/rubber band.</p>
-            <p><strong>Use:</strong> Pour cloudy water through to remove grit; then run through a finer filter and disinfect.</p>
-          </div>
-
-          <div className="guide-card">
-            <h3>16. Rock-and-Gravel Coarse Filter</h3>
-            <p><strong>Need:</strong> container with holes or cut bottle, graduated rocks/gravel, cloth.</p>
-            <p><strong>Make:</strong> Layer large rocks → smaller rocks → gravel → cloth at the outlet.</p>
-            <p><strong>Use:</strong> Pour very silty water through this first; then run through a fine filter; disinfect.</p>
-          </div>
-
-          <div className="guide-card">
-            <h3>21. Sock Filter (Quick Pre-Filter)</h3>
-            <p><strong>Need:</strong> clean sock, container.</p>
-            <p><strong>Make:</strong> Stretch the sock over the container; secure.</p>
-            <p><strong>Use:</strong> Pour water through to remove debris; then fine-filter and disinfect.</p>
-          </div>
-
-          <div className="guide-card">
-            <h3>25. Rapid Heavy-Sediment Filter (Multi-Pass)</h3>
-            <p><strong>Need:</strong> cut bottle or bucket, rocks, gravel, coarse sand, cloth.</p>
-            <p><strong>Make:</strong> Layer: large rocks → gravel → coarse sand → cloth at the outlet.</p>
-            <p><strong>Use:</strong> Pour very muddy water through; repeat 2–3 times until much clearer; then run through a fine filter and disinfect.</p>
-          </div>
-        </div>
-
-        <section className="guide-section card">
-          <h2>⚫ Charcoal-Focused &amp; Special Builds</h2>
-        </section>
-        <div className="guide-subgrid">
-          <div className="guide-card">
             <h3>13. Charcoal-Only Emergency Filter</h3>
             <p><strong>Need:</strong> cloth pouch or bottle neck, crushed hardwood charcoal.</p>
             <p><strong>Make:</strong> Fill a cloth pouch or bottle neck with charcoal; secure.</p>
@@ -226,6 +161,55 @@ export function WaterPurificationContent() {
           </div>
 
           <div className="guide-card">
+            <h3>16. Rock-and-Gravel Coarse Filter</h3>
+            <p><strong>Need:</strong> container with holes or cut bottle, graduated rocks/gravel, cloth.</p>
+            <p><strong>Make:</strong> Layer large rocks → smaller rocks → gravel → cloth at the outlet.</p>
+            <p><strong>Use:</strong> Pour very silty water through this first; then run through a fine filter; disinfect.</p>
+          </div>
+
+          <div className="guide-card">
+            <h3>17. Dual-Stage Bottle (Mechanical Then Adsorptive)</h3>
+            <p><strong>Need:</strong> 2 bottles, cloth, gravel, sand, charcoal.</p>
+            <p><strong>Make:</strong> Bottle A: gravel → sand (mechanical). Bottle B: charcoal → sand (adsorptive).</p>
+            <p><strong>Use:</strong> Pour through A, then B; collect and disinfect.</p>
+          </div>
+
+          <div className="guide-card">
+            <h3>18. Pot-and-Cloth Drip Filter</h3>
+            <p><strong>Need:</strong> pot, clean cloth, sand, charcoal, cord.</p>
+            <p><strong>Make:</strong> Secure cloth over the pot mouth with cord; add sand → charcoal → sand on top of the cloth.</p>
+            <p><strong>Use:</strong> Pour water onto the layers; collect in the pot; disinfect.</p>
+          </div>
+
+          <div className="guide-card">
+            <h3>19. Gourd/Coconut Shell Filter</h3>
+            <p><strong>Need:</strong> hollowed gourd or coconut shell, cloth, sand, charcoal, grass.</p>
+            <p><strong>Make:</strong> Plug the opening with cloth; fill: grass → sand → charcoal → sand.</p>
+            <p><strong>Use:</strong> Hang and drip; disinfect.</p>
+          </div>
+
+          <div className="guide-card">
+            <h3>20. Tin-Can Filter</h3>
+            <p><strong>Need:</strong> clean tin can, nail/awl, cloth, sand, charcoal.</p>
+            <p><strong>Make:</strong> Punch many small holes in the bottom. Line the inside bottom with cloth. Fill: sand → charcoal → sand.</p>
+            <p><strong>Use:</strong> Suspend over a container; pour; disinfect the drips.</p>
+          </div>
+
+          <div className="guide-card">
+            <h3>21. Sock Filter (Quick Pre-Filter)</h3>
+            <p><strong>Need:</strong> clean sock, container.</p>
+            <p><strong>Make:</strong> Stretch the sock over the container; secure.</p>
+            <p><strong>Use:</strong> Pour water through to remove debris; then fine-filter and disinfect.</p>
+          </div>
+
+          <div className="guide-card">
+            <h3>22. Paper-Towel Cone Filter (Short-Term Clarity)</h3>
+            <p><strong>Need:</strong> cut bottle, paper towels, sand, charcoal.</p>
+            <p><strong>Make:</strong> Form a thick cone of paper towels in the neck; add sand → charcoal → sand.</p>
+            <p><strong>Use:</strong> Drip into a container; replace the paper when soggy; disinfect.</p>
+          </div>
+
+          <div className="guide-card">
             <h3>23. Trench Seep Filter (Camp)</h3>
             <p><strong>Need:</strong> shovel/knife, rocks, gravel, sand, charcoal, cloth.</p>
             <p><strong>Make:</strong> Near (not in) a stream, dig a shallow hole. Line the bottom/sides with cloth; fill: rocks → gravel → sand → charcoal → sand.</p>
@@ -236,6 +220,13 @@ export function WaterPurificationContent() {
             <h3>24. Solar Pre-Treatment + Bottle Filter Combo</h3>
             <p><strong>Need:</strong> cloth, a bottle filter (#1 or #2), clear PET bottles.</p>
             <p><strong>Make/Use:</strong> Pre-filter through cloth → run through the bottle filter → fill clear bottles and leave in full sun 6+ hours (SODIS).</p>
+          </div>
+
+          <div className="guide-card">
+            <h3>25. Rapid Heavy-Sediment Filter (Multi-Pass)</h3>
+            <p><strong>Need:</strong> cut bottle or bucket, rocks, gravel, coarse sand, cloth.</p>
+            <p><strong>Make:</strong> Layer: large rocks → gravel → coarse sand → cloth at the outlet.</p>
+            <p><strong>Use:</strong> Pour very muddy water through; repeat 2–3 times until much clearer; then run through a fine filter and disinfect.</p>
           </div>
         </div>
 
