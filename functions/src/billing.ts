@@ -62,7 +62,7 @@ export const grantGoldMembership = onCall({ invoker: "public" }, async (request)
 /**
  * Admin-only, one-time migration: every account created before this
  * paywall shipped has tier "free" with no trialEndsAt (that field didn't
- * exist yet). This gives each of them the same fresh 30-day trial a new
+ * exist yet). This gives each of them the same fresh 3-day trial a new
  * signup gets, starting from the moment it's run. Safe to run more than
  * once — accounts already migrated (or gold/premium) are left alone.
  */

@@ -3,7 +3,7 @@ import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from './firebase'
 import { useAuth } from './AuthContext'
 
-// 'trial' — the 30-day window every new sign-in starts on (see the
+// 'trial' — the 3-day window every new sign-in starts on (see the
 //   createUserProfile Cloud Function). Still full access; trialEndsAt is
 //   what actually decides when that runs out (see entitlement.ts).
 // 'free' — trial ended (or a subscription lapsed) with no active payment.

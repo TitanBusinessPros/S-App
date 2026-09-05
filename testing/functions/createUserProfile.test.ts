@@ -41,7 +41,7 @@ describe("createUserProfile", () => {
     testEnv.cleanup();
   });
 
-  it("starts an ordinary sign-in on a 30-day trial", async () => {
+  it("starts an ordinary sign-in on a 3-day trial", async () => {
     const wrapped = testEnv.wrap(createUserProfile);
     const before = Date.now();
     const fakeUser = {
