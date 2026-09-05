@@ -15,6 +15,7 @@ import { FirstAid } from './pages/FirstAid'
 import { Shelter } from './pages/Shelter'
 import { FindingWater } from './pages/FindingWater'
 import { Snares } from './pages/Snares'
+import { FireStarting } from './pages/FireStarting'
 import { SpeciesNearby } from './pages/SpeciesNearby'
 import { Recipes } from './pages/Recipes'
 
@@ -87,6 +88,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Snares />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/fire-starting"
+            element={
+              <ProtectedRoute>
+                <FireStarting />
               </ProtectedRoute>
             }
           />

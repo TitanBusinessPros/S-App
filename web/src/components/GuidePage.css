@@ -88,3 +88,25 @@
   font-size: 0.95rem;
   margin-bottom: 0.5rem;
 }
+
+.guide-card p {
+  font-size: 0.88rem;
+  margin-bottom: 0.5rem;
+}
+
+.guide-card ol,
+.guide-card ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.guide-card li {
+  margin-bottom: 0.35rem;
+}
+
+.guide-card strong {
+  color: var(--text);
+}
