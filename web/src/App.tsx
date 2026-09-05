@@ -5,6 +5,7 @@ import { AdminRoute } from './components/AdminRoute'
 import { Login } from './pages/Login'
 import { Upgrade } from './pages/Upgrade'
 import { Admin } from './pages/Admin'
+import { Terms } from './pages/Terms'
 import { Dashboard } from './pages/Dashboard'
 import { Compass } from './pages/Compass'
 import { MapWater } from './pages/MapWater'
@@ -22,6 +23,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/terms" element={<Terms />} />
           <Route
             path="/app"
             element={
