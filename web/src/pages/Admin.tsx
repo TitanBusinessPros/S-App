@@ -63,7 +63,11 @@ export function Admin() {
 
       <div className="card admin-card">
         <h3>Grant Gold Membership</h3>
-        <p>Gives an email permanent full access, no billing, ever. Works even if they haven't signed up yet.</p>
+        <p>
+          For giving someone specific — a friend, reviewer, or anyone helping promote the app — permanent full
+          access with no billing, ever. Unrelated to the trial migration below; works even if they haven't signed
+          up yet.
+        </p>
         <form className="admin-form" onSubmit={handleGrant}>
           <input
             type="email"
@@ -82,10 +86,11 @@ export function Admin() {
       </div>
 
       <div className="card admin-card">
-        <h3>One-time: Start Trials for Existing Accounts</h3>
+        <h3>One-time: Start Trials for Prior Sign-Ups</h3>
         <p>
-          Accounts created before the paywall shipped have no trial window yet. This gives each of them a fresh
-          30-day trial starting now. Safe to run more than once — already-migrated accounts are left alone.
+          Accounts created before the paywall shipped have no trial window yet. This gives each of them (everyone
+          who signed up before today) a fresh 30-day trial starting now — a one-time migration, not a promotional
+          grant. Safe to run more than once; already-migrated accounts are left alone.
         </p>
         <button type="button" className="btn" onClick={handleMigrate} disabled={migrating}>
           {migrating ? 'Running…' : 'Start 30-day trials'}

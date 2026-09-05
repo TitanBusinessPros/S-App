@@ -6,7 +6,7 @@ import './Upgrade.css'
 
 export function Upgrade() {
   const { user } = useAuth()
-  const { loading, hasAccess, isTrialing, trialDaysLeft, tier } = useEntitlement()
+  const { loading, isTrialing, trialDaysLeft, tier } = useEntitlement()
 
   const checkoutUrl = user ? buildCheckoutUrl(user.uid, user.email) : null
 
@@ -43,15 +43,15 @@ export function Upgrade() {
             </div>
           )}
 
-          {!hasAccess && (
+          {(tier === 'trial' || tier === 'free') && (
             <div className="card upgrade-pitch">
               <div className="upgrade-price">
                 <span className="upgrade-price-amount mono">$12</span>
                 <span className="upgrade-price-period">/ year</span>
               </div>
               <p className="upgrade-price-breakdown">
-                That's just <strong>$1 a month</strong> — less than a candy bar, for every survival tool in this app,
-                all year long. So worth it!!!
+                That's just <strong>$1 a month</strong> — less than a candy bar, to carry a survival guide with you
+                everywhere you go, all year long. So worth it!!!
               </p>
 
               <ul className="upgrade-benefits">
@@ -66,7 +66,7 @@ export function Upgrade() {
                 target="_blank"
                 rel="noreferrer"
               >
-                Subscribe for $12/year
+                {isTrialing ? 'Subscribe now — lock in $1/month' : 'Subscribe for $12/year'}
               </a>
               <p className="upgrade-fineprint">
                 Handled securely by Stripe. Cancel anytime — you'll keep access through the end of your billing year.
