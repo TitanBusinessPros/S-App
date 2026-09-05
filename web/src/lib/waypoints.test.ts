@@ -1,11 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   bearingDegrees,
+  breadcrumbSpacingThreshold,
   formatDistance,
   haversineMeters,
   loadBreadcrumbTrail,
   loadWaypoints,
   makeId,
+  MIN_BREADCRUMB_SPACING_METERS,
   projectToLocalMeters,
   saveBreadcrumbTrail,
   saveWaypoints,
@@ -56,6 +58,21 @@ describe('formatDistance', () => {
 
   it('shows miles at and beyond a tenth of a mile', () => {
     expect(formatDistance(1609.344)).toBe('1.00 mi')
+  })
+})
+
+describe('breadcrumbSpacingThreshold', () => {
+  it('falls back to the floor when accuracy is unknown', () => {
+    expect(breadcrumbSpacingThreshold(null)).toBe(MIN_BREADCRUMB_SPACING_METERS)
+  })
+
+  it('stays at the floor when the GPS fix is more accurate than it', () => {
+    expect(breadcrumbSpacingThreshold(5)).toBe(MIN_BREADCRUMB_SPACING_METERS)
+  })
+
+  it('rises to match a worse-than-floor accuracy — this is the fix for the ' +
+    'bug where standing still with noisy GPS read as having walked', () => {
+    expect(breadcrumbSpacingThreshold(50)).toBe(50)
   })
 })
 

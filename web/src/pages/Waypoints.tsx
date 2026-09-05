@@ -4,6 +4,7 @@ import { useGeolocation, type Coords } from '../lib/useGeolocation'
 import { headingToCardinal } from '../lib/compass'
 import {
   bearingDegrees,
+  breadcrumbSpacingThreshold,
   formatDistance,
   haversineMeters,
   loadBreadcrumbTrail,
@@ -17,11 +18,6 @@ import {
   type Waypoint,
 } from '../lib/waypoints'
 import './Waypoints.css'
-
-// Only record a new breadcrumb once you've moved at least this far from the
-// last recorded point — GPS jitter while standing still would otherwise
-// flood storage with near-duplicate points.
-const MIN_BREADCRUMB_SPACING_METERS = 8
 
 function formatTime(epochMs: number): string {
   return new Date(epochMs).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
@@ -73,6 +69,7 @@ export function WaypointsContent() {
   const [label, setLabel] = useState('')
   const [recording, setRecording] = useState(false)
   const [trackError, setTrackError] = useState<string | null>(null)
+  const [liveAccuracy, setLiveAccuracy] = useState<number | null>(null)
   const watchIdRef = useRef<number | null>(null)
   const trailRef = useRef<BreadcrumbPoint[]>([])
 
@@ -122,6 +119,9 @@ export function WaypointsContent() {
     setRecording(true)
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
+        const accuracy = pos.coords.accuracy ?? null
+        setLiveAccuracy(accuracy)
+
         const point: BreadcrumbPoint = {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
@@ -129,7 +129,12 @@ export function WaypointsContent() {
         }
         const current = trailRef.current
         const last = current[current.length - 1]
-        if (last && haversineMeters(last.lat, last.lng, point.lat, point.lng) < MIN_BREADCRUMB_SPACING_METERS) {
+        // A GPS fix is only trustworthy to within its own reported
+        // accuracy — comparing against a fixed distance regardless of
+        // that (the original bug here) reads ordinary GPS jitter while
+        // standing still as if you'd actually walked.
+        const threshold = breadcrumbSpacingThreshold(accuracy)
+        if (last && haversineMeters(last.lat, last.lng, point.lat, point.lng) < threshold) {
           return
         }
         const updated = [...current, point]
@@ -148,6 +153,7 @@ export function WaypointsContent() {
       watchIdRef.current = null
     }
     setRecording(false)
+    setLiveAccuracy(null)
   }
 
   function handleClearTrail() {
@@ -251,8 +257,9 @@ export function WaypointsContent() {
           <div className="card waypoints-trail-card">
             <h2>Breadcrumb Trail</h2>
             <p>
-              Records your path as you walk so you can retrace it. Points closer than about 25 ft apart are
-              skipped so standing still doesn't flood the trail.
+              Records your path as you walk so you can retrace it. A new point only counts once you've moved
+              further than your phone's own GPS accuracy at that moment (at least ~50 ft) — so standing still
+              won't add fake distance, even when GPS is noisy indoors or under tree cover.
             </p>
 
             <div className="waypoints-trail-controls">
@@ -269,6 +276,11 @@ export function WaypointsContent() {
                 </button>
               )}
             </div>
+            {recording && liveAccuracy != null && (
+              <p className="waypoints-trail-accuracy mono">
+                Current GPS accuracy: ±{formatDistance(liveAccuracy)} — points must beat that to count.
+              </p>
+            )}
             {trackError && <p className="login-error">{trackError}</p>}
 
             {trail.length > 0 && trailStart && (
