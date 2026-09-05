@@ -2,19 +2,13 @@ import { Shell } from '../components/Shell'
 import { GuideDisclaimer } from '../components/GuideDisclaimer'
 import '../components/GuidePage.css'
 
-const BOTTLE_DIAGRAM = `[OPEN TOP]
-  ↓
-Coarse rocks/gravel (pre-strain big debris)
-  ↓
-Fine sand (mechanical filtration)
-  ↓
-Crushed hardwood charcoal (adsorption: taste/odor/organics)
-  ↓
-Fine sand (catch charcoal fines)
-  ↓
-Cloth/coffee filter at neck (final barrier)
-  ↓
-[CAP with small holes or no cap, dripping into clean container]`
+const BOTTLE_LAYERS = [
+  { label: 'Coarse rocks / gravel', note: 'Pre-strains big debris' },
+  { label: 'Fine sand', note: 'Mechanical filtration' },
+  { label: 'Crushed hardwood charcoal', note: 'Adsorbs taste, odor, organics' },
+  { label: 'Fine sand', note: 'Catches charcoal fines' },
+  { label: 'Cloth / coffee filter at the neck', note: 'Final barrier' },
+]
 
 export function WaterPurificationContent() {
   return (
@@ -37,7 +31,19 @@ export function WaterPurificationContent() {
         <section className="guide-section card">
           <h2>🧪 Classic Bottle Filter — Layer Diagram</h2>
           <p>Use this layout for any build that says "bottle, cut bottom, layers top→bottom."</p>
-          <pre className="mono guide-diagram">{BOTTLE_DIAGRAM}</pre>
+          <div className="layer-stack">
+            <div className="layer-stack-cap">⬇ Open top — pour water in here</div>
+            {BOTTLE_LAYERS.map((layer, i) => (
+              <div key={layer.label + i}>
+                <div className="layer-stack-row">
+                  <span className="layer-stack-label">{layer.label}</span>
+                  <span className="layer-stack-note">{layer.note}</span>
+                </div>
+                {i < BOTTLE_LAYERS.length - 1 && <div className="layer-stack-arrow">↓</div>}
+              </div>
+            ))}
+            <div className="layer-stack-cap">⬇ Cap with small holes (or no cap) — drips into a clean container</div>
+          </div>
           <p>
             <strong>Assembly, any bottle build:</strong> cut the bottom off, invert the bottle, place cloth in
             the neck, then add layers in the order above, tamp lightly, and drip into a clean pot/bottle.
