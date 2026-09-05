@@ -17,6 +17,7 @@ import { FindingWater } from './pages/FindingWater'
 import { Snares } from './pages/Snares'
 import { FireStarting } from './pages/FireStarting'
 import { WaterPurification } from './pages/WaterPurification'
+import { Waypoints } from './pages/Waypoints'
 import { SpeciesNearby } from './pages/SpeciesNearby'
 import { Recipes } from './pages/Recipes'
 
@@ -105,6 +106,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <WaterPurification />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/waypoints"
+            element={
+              <ProtectedRoute>
+                <Waypoints />
               </ProtectedRoute>
             }
           />
