@@ -2,28 +2,30 @@
 
 An offline-first wilderness survival guide app.
 
-## Session Status (as of 2026-08-29 21:40 CDT)
+## Session Status (as of 2026-09-05 CDT)
 
 This section exists so a new session (human or Claude Code) can pick up exactly where the last one left off. It intentionally contains **no credentials or secrets** — see "On credentials" below for why.
 
 ### What's built and deployed
-- **Foundation**: Google-only sign-in (no email/password), dark UI shell, free/premium tier scaffold (Stripe not wired up yet — deliberately last on the list)
+- **Foundation**: Google-only sign-in (no email/password), dark UI shell, tiered access (`trial` → `free`/`premium`/`gold`) enforced client-side via `web/src/lib/entitlement.ts`
+- **Billing**: Stripe is fully wired up — $12/year via a Stripe Payment Link (`web/src/lib/stripe.ts` builds the checkout URL), `stripeWebhook` Cloud Function keeps each user's Firestore tier in sync with their subscription, `grantGoldMembership`/`backfillTrialTiers` are admin-only callables for manual grants and one-time migrations. New sign-ins get a 3-day trial (`TRIAL_DURATION_MS` in `functions/src/constants.ts`)
 - **Compass**: magnetic heading (phone only) + star-compass (Polaris) guidance
+- **Waypoints & Trail**: drop a pin, record a GPS breadcrumb trail back to it, all local (device GPS + local storage, no backend)
 - **Water & Terrain Map**: adjustable-radius water search via OpenStreetMap/Overpass, through a Cloud Function
 - **7-Day Weather**: client-side, via Open-Meteo (no Cloud Function needed)
-- **Field Guides**: First Aid, Shelter Building, Finding Water, Snares & Traps — general reference content, deliberately not tied to fabricated per-location claims
+- **Field Guides**: First Aid, Shelter Building, Finding Water, Fire Starting, Water Purification (25 improvised filters), Snares & Traps, Wild Game Recipes — general reference content, deliberately not tied to fabricated per-location claims
 - **Plants, Wildlife & Wood**: a small hand-curated starter dataset (~24 Oklahoma species), cross-checked against real GBIF occurrence data and filtered by real season windows, via a Cloud Function
+- **Legal/site polish**: Terms of Service, Privacy Policy, shared footer, real app icon as favicon
 - Everything above has Jest/Vitest tests and is enforced by CI (100% Cloud Function test coverage is a hard gate — see `testing/functions/check-coverage.js`)
 - Deployed live: **https://survival-day-app.web.app** (Firebase Hosting + Cloud Functions + Firestore, project `survival-day-app`, Blaze plan)
 
-### Current blocker (unresolved)
-The deployed Cloud Functions (`getWaterFeatures`, `getSpeciesNearby`, `healthCheck`) are returning `403 Forbidden` / "request was not authenticated" — the underlying Cloud Run services aren't allowing public invocation, even after adding an explicit `invoker: "public"` option in code and redeploying. This looks like a Google Cloud project-level policy blocking public IAM grants, not a code bug. **Next step**: check console.cloud.google.com/run?project=survival-day-app → each service → Permissions → try adding `allUsers` as `Cloud Run Invoker`, and see whether it saves or hits a policy error.
+### Recently resolved (documented so it isn't re-investigated from scratch)
+- The `403 Forbidden` / "request was not authenticated" issue on `getWaterFeatures`/`getSpeciesNearby`/`healthCheck` is fixed — every callable/HTTP function now deploys with `invoker: "public"` and its Cloud Run IAM policy correctly grants `allUsers` → `roles/run.invoker`. Verified directly via `gcloud run services get-iam-policy <fn> --region=us-central1 --project=survival-day-app`.
 
 ### Also open
-- **Weather accuracy complaint**: user reported the 7-day forecast looked "off" — code review found no obvious bug; needs specific numbers (what the app showed vs. actual forecast) to investigate further, since this is a client-side-only feature I can't inspect via server logs.
+- **Weather accuracy complaint**: user reported the 7-day forecast looked "off" — code review found no obvious bug; needs specific numbers (what the app showed vs. actual forecast) to investigate further, since this is a client-side-only feature that can't be inspected via server logs.
 - **Crowd-sourced wildlife sightings**: not built yet. This is the real substitute for "live satellite of predators nearby," which isn't a feasible product (no satellite service can detect animals in real time) — the plan is user-reported sightings shown on the map instead.
 - **Gemini in Firebase / GCA (Gemini Cloud Assist)**: not integrated. GCA is a console-embedded assistant (not callable from this session); could be used by the user directly in GCP console for troubleshooting. Gemini-in-Firebase could later power a conversational "ask the guide" layer, but should not be the source of truth for safety-critical content (edibility/danger).
-- **Stripe**: explicitly deferred by the user until everything else is working.
 
 ### Known past bugs (fixed, documented so they aren't reintroduced)
 - `firebase.json`'s functions `ignore` list used to include `"lib"`, which silently stripped compiled output out of every deploy (`lib/index.js does not exist` build failures). Removed — the ignore list should only ever contain `node_modules`, `.git`, and debug logs.
@@ -34,7 +36,8 @@ The deployed Cloud Functions (`getWaterFeatures`, `getSpeciesNearby`, `healthChe
 This file will never contain actual tokens, API keys, or passwords, even in a private repo — that would contradict this project's own first rule (Stripe/secrets go in GitHub Actions secrets, never committed) and would be a real exposure risk once this repo has any collaborator or ever goes public. What's true as of this session, without exposing anything:
 - **GitHub**: CLI (`gh`) authenticated as `TitanBusinessPros`; repo is `github.com/TitanBusinessPros/S-App`; branch protection on `main` requires a PR + all 3 CI checks (even for admins)
 - **Firebase**: CLI authenticated to the same Google account; project `survival-day-app` is on the **Blaze** plan; Google is the only enabled sign-in provider
-- A future session re-authenticates the same way this one did (`gh auth login`, `firebase login`) — those credentials live in this machine's own OS-level credential store, not in this repo, and aren't something any file can hand off.
+- **Google Cloud**: `gcloud` CLI is also authenticated (as `titanbusinesspros@gmail.com`), which is what let this session inspect and confirm Cloud Run IAM policy directly instead of only through the Firebase CLI or console
+- A future session re-authenticates the same way this one did (`gh auth login`, `firebase login`, `gcloud auth login`) — those credentials live in this machine's own OS-level credential store, not in this repo, and aren't something any file can hand off.
 
 ## Structure
 

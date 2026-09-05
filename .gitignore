@@ -31,3 +31,9 @@ Thumbs.db
 /How to open app from power shell.txt
 /How to give Stripe Webhook Secret in Claude.txt
 /10 ideas for survival app.txt
+
+# Disaster-recovery backup — a full snapshot of code, GitHub/Firebase/GCP
+# config, and IAM policy, generated locally. Never push this: even though it
+# holds no secret values, it does hold internal infra detail (service specs,
+# IAM bindings, branch protection) that has no reason to be public.
+/V-2/
