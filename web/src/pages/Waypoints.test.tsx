@@ -303,6 +303,65 @@ describe('WaypointsContent', () => {
     expect(screen.getByText(/⬅ Back to start: 0 ft/)).toBeInTheDocument()
   })
 
+  it('visibly moves the "You" marker on the trail map while actively recording', async () => {
+    // Regression test for a real user report: the marker's underlying
+    // position was updating correctly (proven by the "back to start" and
+    // "off trail" text readouts changing), but the trail map's viewBox
+    // rescaled to tightly fit your exact position on every single GPS
+    // tick — and while walking forward into new territory, you're always
+    // right at the edge of that ever-expanding frame, so the marker looked
+    // frozen relative to it even though its true coordinate moved. The fix
+    // keeps the frame stable (grown with headroom) instead of refitting
+    // tightly every tick, so movement within already-covered ground reads
+    // as real on-screen movement.
+    const geo = mockGeolocation({ lat: 35, lng: -97 })
+    const { container } = render(<WaypointsContent />)
+    const youMarker = () => container.querySelectorAll('circle')[1]
+
+    fireEvent.click(await screen.findByText('▶️ Start Recording'))
+    geo.fireWatch(35, -97, 5)
+    await screen.findByText(/1 point ·/)
+    // ~111m north — recorded as a second point, establishing the frame.
+    geo.fireWatch(35.001, -97, 5)
+    await screen.findByText(/2 points ·/)
+
+    const firstCx = Number(youMarker().getAttribute('cx'))
+    const firstCy = Number(youMarker().getAttribute('cy'))
+
+    // ~11m further north — still while actively recording, and (deliberately
+    // under the 15m breadcrumb spacing threshold, so this isn't recorded as
+    // a new trail point either) well within the frame's existing headroom,
+    // so it shouldn't need to rescale.
+    geo.fireWatch(35.0011, -97, 5)
+    const secondCx = Number(youMarker().getAttribute('cx'))
+    const secondCy = Number(youMarker().getAttribute('cy'))
+
+    const pixelsMoved = Math.hypot(secondCx - firstCx, secondCy - firstCy)
+    expect(pixelsMoved).toBeGreaterThan(5)
+  })
+
+  it('expands the trail map frame, without erroring, when you move well beyond it', async () => {
+    const geo = mockGeolocation({ lat: 35, lng: -97 })
+    const { container } = render(<WaypointsContent />)
+
+    fireEvent.click(await screen.findByText('▶️ Start Recording'))
+    geo.fireWatch(35, -97, 5)
+    await screen.findByText(/1 point ·/)
+    geo.fireWatch(35.001, -97, 5)
+    await screen.findByText(/2 points ·/)
+
+    // A big jump far outside the frame established so far — the marker
+    // should still land inside the visible plot, not off the edge of it.
+    geo.fireWatch(35.01, -97, 5)
+    const youMarker = container.querySelectorAll('circle')[1]
+    const cx = Number(youMarker.getAttribute('cx'))
+    const cy = Number(youMarker.getAttribute('cy'))
+    expect(cx).toBeGreaterThanOrEqual(0)
+    expect(cx).toBeLessThanOrEqual(220)
+    expect(cy).toBeGreaterThanOrEqual(0)
+    expect(cy).toBeLessThanOrEqual(220)
+  })
+
   it('does not refine the start point for real movement, only for a more accurate re-read of the same spot', async () => {
     const geo = mockGeolocation({ lat: 35, lng: -97 })
     render(<WaypointsContent />)

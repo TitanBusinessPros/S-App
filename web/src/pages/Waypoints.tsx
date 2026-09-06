@@ -24,23 +24,65 @@ function formatTime(epochMs: number): string {
   return new Date(epochMs).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 }
 
+interface PlotBounds {
+  minX: number
+  maxX: number
+  minY: number
+  maxY: number
+}
+
+/** Expands `bounds` just enough to contain every point in `all`, adding
+ * headroom (25% of the resulting span, floor 10m) so a bit more movement
+ * in the same direction doesn't immediately force another expansion. */
+function growBounds(bounds: PlotBounds | null, all: Array<{ x: number; y: number }>): PlotBounds {
+  const rawMinX = Math.min(...all.map((p) => p.x))
+  const rawMaxX = Math.max(...all.map((p) => p.x))
+  const rawMinY = Math.min(...all.map((p) => p.y))
+  const rawMaxY = Math.max(...all.map((p) => p.y))
+  const marginX = Math.max((rawMaxX - rawMinX) * 0.25, 10)
+  const marginY = Math.max((rawMaxY - rawMinY) * 0.25, 10)
+  return {
+    minX: Math.min(rawMinX - marginX, bounds?.minX ?? Infinity),
+    maxX: Math.max(rawMaxX + marginX, bounds?.maxX ?? -Infinity),
+    minY: Math.min(rawMinY - marginY, bounds?.minY ?? Infinity),
+    maxY: Math.max(rawMaxY + marginY, bounds?.maxY ?? -Infinity),
+  }
+}
+
 function TrailPlot({ trail, current }: { trail: BreadcrumbPoint[]; current: Coords }) {
   const origin = trail[0]
   const points = trail.map((p) => projectToLocalMeters(p.lat, p.lng, origin.lat, origin.lng))
   const currentPoint = projectToLocalMeters(current.lat, current.lng, origin.lat, origin.lng)
   const all = [...points, currentPoint]
 
-  const minX = Math.min(...all.map((p) => p.x))
-  const maxX = Math.max(...all.map((p) => p.x))
-  const minY = Math.min(...all.map((p) => p.y))
-  const maxY = Math.max(...all.map((p) => p.y))
-  const span = Math.max(maxX - minX, maxY - minY, 1)
+  // The visible frame only ever grows (never shrinks or re-centers) to fit
+  // a point that's fallen outside it — it doesn't refit tightly to your
+  // exact live position on every GPS tick. Refitting on every tick was the
+  // bug: while actively recording and walking somewhere new, your position
+  // is almost always right at the edge of the ever-expanding trail, so a
+  // tight refit keeps you in roughly the same *relative* spot in the frame
+  // every render — the marker looked frozen even though its real
+  // coordinate was updating correctly. Once recording stops (or whenever
+  // you're moving back within already-covered ground), the frame is
+  // already big enough and stays put, so movement reads clearly.
+  const [bounds, setBounds] = useState<PlotBounds>(() => growBounds(null, all))
+  const needsGrow =
+    currentPoint.x < bounds.minX ||
+    currentPoint.x > bounds.maxX ||
+    currentPoint.y < bounds.minY ||
+    currentPoint.y > bounds.maxY ||
+    points.some((p) => p.x < bounds.minX || p.x > bounds.maxX || p.y < bounds.minY || p.y > bounds.maxY)
+  useEffect(() => {
+    if (needsGrow) setBounds((prev) => growBounds(prev, all))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [needsGrow, currentPoint.x, currentPoint.y, points.length])
 
   const size = 220
   const padding = 24
+  const span = Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY, 1)
   const scale = (size - padding * 2) / span
-  const cx = (minX + maxX) / 2
-  const cy = (minY + maxY) / 2
+  const cx = (bounds.minX + bounds.maxX) / 2
+  const cy = (bounds.minY + bounds.maxY) / 2
 
   // SVG y grows downward; north (+y in our projection) should read as "up".
   function toSvg(p: { x: number; y: number }) {
