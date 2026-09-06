@@ -50,6 +50,20 @@ beforeEach(() => {
 })
 
 describe('WaypointsContent', () => {
+  it('shows the 3-step how-to before any waypoint or recording exists', async () => {
+    mockGeolocation({ lat: 35, lng: -97 })
+    render(<WaypointsContent />)
+    const heading = await screen.findByText('How to use this')
+    // Scoped to the how-to card itself — the page's actual Start/Stop
+    // Recording buttons are already on screen at this point too, and a
+    // bare text query for "Start Recording" would ambiguously match both.
+    const stepsCard = heading.closest('.waypoints-howto')
+    expect(stepsCard).not.toBeNull()
+    expect(stepsCard!.textContent).toMatch(/Save a waypoint/)
+    expect(stepsCard!.textContent).toMatch(/Start Recording/)
+    expect(stepsCard!.textContent).toMatch(/Stop Recording/)
+  })
+
   it('resolves the current position and shows the drop-waypoint form', async () => {
     mockGeolocation({ lat: 35, lng: -97 })
     render(<WaypointsContent />)
