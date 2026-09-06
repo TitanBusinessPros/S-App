@@ -155,3 +155,142 @@
   font-size: 0.85rem;
   line-height: 1.4;
 }
+
+/* Shared jump-to-section quick nav, used by any guide page long enough to
+   benefit from one (First Aid, Shelter, Finding Water, ...). */
+.guide-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+  padding: 0.75rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.guide-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--accent);
+  border: 1px solid var(--border-bright);
+}
+
+.guide-nav-link:hover {
+  background: var(--bg-card);
+}
+
+.guide-section[id] {
+  scroll-margin-top: 1rem;
+}
+
+/* Shared responsive "name/value" reference table — first column is a bold
+   title (the "name" of a problem/method/design), every column after it is
+   a value with its header available for mobile labeling. A rigid table
+   gets too cramped to read below ~640px, so rows collapse into per-row
+   cards there instead (the classic responsive-table pattern), matching
+   this app's mobile-first PWA target. */
+.guide-table-wrap {
+  overflow-x: auto;
+}
+
+.guide-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.guide-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border-bright);
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.guide-table td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.guide-table tbody tr:hover {
+  background: var(--bg-elevated);
+}
+
+.guide-table td:first-child {
+  color: var(--text);
+  font-weight: 600;
+  width: 30%;
+}
+
+.guide-table-num {
+  color: var(--accent);
+}
+
+.guide-table-footnote {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+@media (max-width: 640px) {
+  .guide-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    padding: 0;
+    margin: -1px;
+  }
+
+  .guide-table,
+  .guide-table tbody,
+  .guide-table tr,
+  .guide-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .guide-table tr {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.7rem 0.9rem;
+    margin-bottom: 0.75rem;
+    background: var(--bg-elevated);
+  }
+
+  .guide-table tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .guide-table td {
+    border-bottom: none;
+    padding: 0.2rem 0;
+    width: auto;
+  }
+
+  .guide-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-faint);
+    margin-top: 0.4rem;
+    margin-bottom: 0.15rem;
+  }
+}
