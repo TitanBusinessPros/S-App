@@ -7,11 +7,27 @@ import { SnaresContent } from './Snares'
 import { RecipesContent } from './Recipes'
 
 describe('FirstAidContent', () => {
-  it('renders its core sections', () => {
+  it('renders the universal response and every problem category', () => {
     render(<FirstAidContent />)
     expect(screen.getByText('First Aid')).toBeInTheDocument()
-    expect(screen.getByText(/Severe Bleeding/)).toBeInTheDocument()
-    expect(screen.getByText(/Snake Bite/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Universal Response/ })).toBeInTheDocument()
+    expect(screen.getByText(/Make the scene safe/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Trauma, Wounds & Movement Injuries/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Heat, Cold, Altitude, Weather, Water & Fire/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Bites, Stings, Plants & Infections/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Medical Emergencies & Evacuation Decisions/ })).toBeInTheDocument()
+  })
+
+  it('renders a specific problem/action row with its full first-aid measures', () => {
+    render(<FirstAidContent />)
+    expect(screen.getByText(/Suspected venomous snakebite/)).toBeInTheDocument()
+    expect(screen.getByText(/No cutting, sucking, ice, tourniquet, electric shock, or snake capture\./)).toBeInTheDocument()
+  })
+
+  it('links the quick-nav to every section, including the universal response', () => {
+    render(<FirstAidContent />)
+    expect(screen.getByRole('link', { name: /Universal Response/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Bites, Stings, Plants & Infections/ })).toBeInTheDocument()
   })
 
   it('deliberately does not claim to identify medicinal plants', () => {
