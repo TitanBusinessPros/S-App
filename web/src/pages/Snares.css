@@ -1,0 +1,87 @@
+.trap-designs-intro {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: -0.5rem 0 0.25rem;
+}
+
+/* 100 designs render as collapsed-by-default disclosures rather than 100
+   always-expanded cards — each has a materials list plus a multi-step
+   build, so fully expanding all of them at once would make the page
+   unnavigable on a phone. */
+.trap-design-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.trap-design {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+}
+
+.trap-design[open] {
+  border-color: var(--border-bright);
+}
+
+.trap-design summary {
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.3rem 0.75rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.trap-design summary::marker {
+  color: var(--text-faint);
+}
+
+.trap-design-num {
+  color: var(--accent);
+}
+
+.trap-design-meta {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.trap-design-intro {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-top: 0.6rem;
+}
+
+.trap-design p {
+  font-size: 0.88rem;
+  margin-top: 0.6rem;
+}
+
+.trap-design ol {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.trap-design li {
+  margin-bottom: 0.3rem;
+}
+
+.trap-design-note {
+  color: var(--accent-2);
+  font-size: 0.82rem;
+}
+
+.trap-design-note strong {
+  color: var(--accent-2);
+}
