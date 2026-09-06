@@ -36,10 +36,27 @@
   font-size: 0.92rem;
   font-weight: 600;
   color: var(--text);
+  /* A <summary> only gets a native disclosure marker while it keeps
+     display: list-item — overriding display (to flex, here, so the name
+     and type/difficulty can sit side by side) drops that marker in most
+     browsers, leaving no visible hint that the row expands. Suppress the
+     native marker explicitly (Firefox/Chromium via list-style, Safari via
+     the -webkit pseudo-element) and draw our own toggle icon instead, so
+     "there's more here" is never invisible. */
+  list-style: none;
 }
 
-.trap-design summary::marker {
+.trap-design summary::-webkit-details-marker {
+  display: none;
+}
+
+.trap-design-toggle {
   color: var(--text-faint);
+  transition: transform 0.15s ease;
+}
+
+.trap-design[open] .trap-design-toggle {
+  transform: rotate(90deg);
 }
 
 .trap-design-num {
