@@ -62,11 +62,39 @@ describe('ShelterContent', () => {
 })
 
 describe('FindingWaterContent', () => {
-  it('renders the core techniques without asserting a fabricated dig depth', () => {
+  it('renders first priorities and all 3 method categories totaling 50 methods', () => {
     render(<FindingWaterContent />)
-    expect(screen.getByText(/Solar Still/)).toBeInTheDocument()
-    expect(screen.getByText(/Transpiration Bag/)).toBeInTheDocument()
-    expect(screen.getByText(/genuinely unpredictable without local data/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /First Priorities/ })).toBeInTheDocument()
+    expect(screen.getByText(/Activate SOS early/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Direct Natural Sources/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Rain, Snow & Atmospheric Collection/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Groundwater & Digging Methods/ })).toBeInTheDocument()
+    // Spot-check one method from each category, including the highest number.
+    expect(screen.getByText('Spring')).toBeInTheDocument()
+    expect(screen.getByText('Dew Wipe')).toBeInTheDocument()
+    expect(screen.getByText('Use a Map-Guided Groundwater Target')).toBeInTheDocument()
+  })
+
+  it('flags solar stills as a method to avoid, not a recommended technique', () => {
+    // Regression check: the old page taught a full solar-still build as a
+    // primary technique. The new source material explicitly lists solar
+    // stills under "methods to avoid" — this asserts that correction, not
+    // just that the phrase "solar still" appears somewhere.
+    render(<FindingWaterContent />)
+    const avoidHeading = screen.getByRole('heading', { name: /Methods to Avoid/ })
+    const avoidSection = avoidHeading.closest('section')
+    expect(avoidSection).not.toBeNull()
+    expect(avoidSection!.textContent).toMatch(/Solar Stills/)
+    expect(screen.queryByRole('heading', { name: /^☀️ Solar Still$/ })).not.toBeInTheDocument()
+  })
+
+  it('renders the seep-hole procedure and the treatment-methods comparison', () => {
+    render(<FindingWaterContent />)
+    expect(screen.getByRole('heading', { name: /Dig a Seep Hole/ })).toBeInTheDocument()
+    expect(screen.getByText(/Confirm that no rain, storm, or flash-flood risk exists/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Treat What You Find/ })).toBeInTheDocument()
+    expect(screen.getByText('Boiling')).toBeInTheDocument()
+    expect(screen.getByText(/do not reliably kill Cryptosporidium/)).toBeInTheDocument()
   })
 })
 

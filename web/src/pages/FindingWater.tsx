@@ -1,71 +1,156 @@
 import { Shell } from '../components/Shell'
 import { GuideDisclaimer } from '../components/GuideDisclaimer'
+import {
+  BOILING_GUIDANCE,
+  FIRST_PRIORITIES,
+  SEEP_HOLE_INTRO,
+  SEEP_HOLE_STEPS,
+  SURVIVAL_DECISION_RULE,
+  WATER_METHOD_CATEGORIES,
+  WATER_METHODS_TO_AVOID,
+  WATER_TREATMENT_METHODS,
+  type WaterMethodCategory,
+} from '../lib/findingWaterData'
 import '../components/GuidePage.css'
+
+function WaterMethodTable({ category }: { category: WaterMethodCategory }) {
+  return (
+    <section id={`water-${category.key}`} className="guide-section card">
+      <h2>{category.emoji} {category.title}</h2>
+      <div className="guide-table-wrap">
+        <table className="guide-table">
+          <thead>
+            <tr>
+              <th scope="col">Method</th>
+              <th scope="col">How to use it</th>
+            </tr>
+          </thead>
+          <tbody>
+            {category.items.map((item) => (
+              <tr key={item.num}>
+                <td>
+                  <span className="guide-table-num">{item.num}.</span> {item.name}
+                </td>
+                <td data-label="How to use it">{item.text}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
 
 export function FindingWaterContent() {
   return (
     <>
       <div className="guide-header">
         <h1>Finding Water</h1>
-        <p>Where water sits underground, and how deep, varies enormously by local geology — there's no single reliable number. These are the indicators experienced trackers actually use to find it.</p>
+        <p>
+          50 practical ways to obtain water in the field, roughly ordered from most practical and least damaging
+          to last-ditch — plus how to treat what you find, since obtaining water is never the same as it being
+          safe to drink.
+        </p>
       </div>
 
       <GuideDisclaimer>
-        Untreated water can carry parasites and bacteria even if it looks clean. Filter and/or boil for at least
-        1 minute (3 minutes above 6,500 ft) before drinking whenever you have the means to.
+        Untreated water can carry parasites, bacteria, viruses, and even chemical contamination invisible to the
+        eye. Boil for at least 1 minute (3 minutes above 6,500 ft) when you can; if you can't boil, filter first
+        and then disinfect — chemical treatment alone doesn't reliably kill Cryptosporidium.
       </GuideDisclaimer>
 
+      <nav className="guide-nav" aria-label="Jump to a section">
+        <a href="#water-first-priorities" className="guide-nav-link">🆘 First Priorities</a>
+        {WATER_METHOD_CATEGORIES.map((category) => (
+          <a key={category.key} href={`#water-${category.key}`} className="guide-nav-link">
+            {category.emoji} {category.title}
+          </a>
+        ))}
+        <a href="#water-seep-hole" className="guide-nav-link">🕳️ Dig a Seep Hole</a>
+        <a href="#water-avoid" className="guide-nav-link">🚫 Methods to Avoid</a>
+        <a href="#water-treat" className="guide-nav-link">🧪 Treat What You Find</a>
+        <a href="#water-decision-rule" className="guide-nav-link">🧭 Decision Rule</a>
+      </nav>
+
       <div className="guide-sections">
-        <section className="guide-section card">
-          <h2>👀 Reliable Indicators, Not Guesses</h2>
+        <section id="water-first-priorities" className="guide-section card">
+          <h2>🆘 First Priorities</h2>
           <ul>
-            <li><strong>Green vegetation</strong> in an otherwise dry landscape — plants don't grow deep roots for no reason.</li>
-            <li><strong>Insect swarms</strong> at dusk, and converging animal trails — animals travel toward water on a schedule, especially near dawn and dusk.</li>
-            <li><strong>Low points and valleys</strong> — water follows gravity; a dry-looking valley floor is a better bet than a ridge.</li>
-            <li><strong>Outside bends of dry riverbeds</strong> — water undercuts the outer bank last as a stream dries up, so it often lingers there longest, just under the surface.</li>
-            <li><strong>Rock seeps</strong> — a damp streak on an exposed rock face, even a small one, usually means a spring nearby.</li>
+            {FIRST_PRIORITIES.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
           </ul>
         </section>
 
-        <section className="guide-section card">
-          <h2>⛏️ Where to Dig</h2>
-          <p>
-            If you've found one of the indicators above but no visible water, dig at the <strong>lowest point</strong>{' '}
-            of that spot — the outside bend of a dry creek, or the base of a green patch. Depth to water is
-            genuinely unpredictable without local data (it can be inches in a wet riverbed or many feet in dry
-            terrain) — dig a small test hole first rather than committing to a large pit. If it's dry at 2–3 feet
-            with no dampness at all in the soil, move to a different spot rather than digging deeper blind.
-          </p>
-        </section>
+        {WATER_METHOD_CATEGORIES.map((category) => (
+          <WaterMethodTable key={category.key} category={category} />
+        ))}
 
-        <section className="guide-section card">
-          <h2>☀️ Solar Still</h2>
-          <p>Works even in genuinely dry terrain, using ground moisture rather than a visible water source:</p>
+        <section id="water-seep-hole" className="guide-section card">
+          <h2>🕳️ How to Dig a Seep Hole</h2>
+          <p>{SEEP_HOLE_INTRO}</p>
           <ol>
-            <li>Dig a bowl-shaped pit about 3 feet across, 2 feet deep, in sun-exposed ground.</li>
-            <li>Place a container in the center of the pit.</li>
-            <li>Cover the pit with plastic sheeting, weighted at the edges with soil to seal it.</li>
-            <li>Place a small stone in the center of the sheeting so it dips directly over the container.</li>
-            <li>Condensation collects on the underside of the plastic and drips into the container. Yields are small — plan on this as a supplement, not a primary source.</li>
+            {SEEP_HOLE_STEPS.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
           </ol>
         </section>
 
-        <section className="guide-section card">
-          <h2>🌳 Transpiration Bag</h2>
-          <p>
-            Tie a clear plastic bag around a leafy, sun-exposed tree branch (avoid known-toxic species). The
-            plant's own transpiration condenses inside the bag over a few hours. Low yield per bag, but several
-            bags on different branches add up, and it costs almost nothing to set up while you do other tasks.
-          </p>
+        <section id="water-avoid" className="guide-section card">
+          <h2>🚫 Methods to Avoid</h2>
+          <p>Do not rely on these myths or high-risk techniques:</p>
+          <div className="guide-table-wrap">
+            <table className="guide-table">
+              <thead>
+                <tr>
+                  <th scope="col">Method</th>
+                  <th scope="col">Why not</th>
+                </tr>
+              </thead>
+              <tbody>
+                {WATER_METHODS_TO_AVOID.map((item) => (
+                  <tr key={item.name}>
+                    <td>{item.name}</td>
+                    <td data-label="Why not">{item.text}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
-        <section className="guide-section card">
-          <h2>🌅 Dew Collection</h2>
-          <p>
-            In the early morning, tie absorbent cloth around your ankles and walk through grass, or lay cloth
-            over low vegetation overnight and wring it out at dawn — dew often provides more usable water than
-            people expect, and it requires no digging or equipment.
-          </p>
+        <section id="water-treat" className="guide-section card">
+          <h2>🧪 Treat What You Find</h2>
+          <div className="guide-table-wrap">
+            <table className="guide-table">
+              <thead>
+                <tr>
+                  <th scope="col">Method</th>
+                  <th scope="col">What it does well</th>
+                  <th scope="col">Critical limits</th>
+                </tr>
+              </thead>
+              <tbody>
+                {WATER_TREATMENT_METHODS.map((row) => (
+                  <tr key={row.method}>
+                    <td>{row.method}</td>
+                    <td data-label="What it does well">{row.whatItDoesWell}</td>
+                    <td data-label="Critical limits">{row.criticalLimits}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="guide-table-footnote">{BOILING_GUIDANCE}</p>
+        </section>
+
+        <section id="water-decision-rule" className="guide-section card">
+          <h2>🧭 Survival Decision Rule</h2>
+          <ul>
+            {SURVIVAL_DECISION_RULE.map((rule, i) => (
+              <li key={i}>{rule}</li>
+            ))}
+          </ul>
         </section>
       </div>
     </>
