@@ -281,6 +281,19 @@ export function WaypointsContent() {
         <p>Drop a pin at camp or the trailhead, then find your way back — even with no signal, once saved.</p>
       </div>
 
+      <div className="card waypoints-howto">
+        <h2>How to use this</h2>
+        <ol>
+          <li><strong>Save a waypoint</strong> at your starting point — camp, trailhead, or vehicle.</li>
+          <li>Tap <strong>Start Recording</strong> (▶️) in the Breadcrumb Trail section below, before you head out.</li>
+          <li>
+            Tap <strong>Stop Recording</strong> (⏹️) whenever you're ready to head back — the "You" marker and
+            the "Off trail" / "Back to start" readouts keep tracking your live position so you can follow the
+            trail back the whole way, not just at the moment you stopped.
+          </li>
+        </ol>
+      </div>
+
       <div className="card waypoints-note">
         Waypoints and your trail are saved only on this device, not synced to your account. Breadcrumb
         recording only runs while this page stays open with your screen on — phones pause GPS tracking for

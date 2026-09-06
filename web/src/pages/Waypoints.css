@@ -13,6 +13,32 @@
   margin: 0 auto;
 }
 
+.waypoints-howto {
+  margin-bottom: 1.25rem;
+}
+
+.waypoints-howto h2 {
+  font-size: 1.05rem;
+  margin-bottom: 0.6rem;
+}
+
+.waypoints-howto ol {
+  margin: 0;
+  padding-left: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.waypoints-howto li {
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.waypoints-howto li strong {
+  color: var(--text);
+}
+
 .waypoints-note {
   font-size: 0.82rem;
   color: var(--text-dim);
