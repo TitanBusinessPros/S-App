@@ -294,3 +294,17 @@
     margin-bottom: 0.15rem;
   }
 }
+
+/* Shared small uppercase label used to organize content within a single
+   card/section without it being a "real" heading (so it isn't swept up by
+   any rule that centers actual section headers) — same pattern Recipes and
+   Shelter each already have their own copy of. */
+.guide-subheading {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  margin-top: 0.6rem;
+  margin-bottom: 0.2rem;
+}

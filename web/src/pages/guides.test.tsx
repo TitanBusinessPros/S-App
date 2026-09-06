@@ -99,11 +99,36 @@ describe('FindingWaterContent', () => {
 })
 
 describe('SnaresContent', () => {
-  it('renders the core snare designs and a legal disclaimer', () => {
+  it('renders the core loop-snare designs and a legal disclaimer', () => {
     render(<SnaresContent />)
     expect(screen.getByText(/Squirrel Pole/)).toBeInTheDocument()
-    expect(screen.getByText(/Figure-4 Deadfall/)).toBeInTheDocument()
+    expect(screen.getByText(/Twitch-Up Spring Snare/)).toBeInTheDocument()
     expect(screen.getByText(/Trapping regulations vary/)).toBeInTheDocument()
+  })
+
+  it('renders all 4 trap-design categories, including a design from the last one', () => {
+    render(<SnaresContent />)
+    expect(screen.getByRole('heading', { name: /Primitive Trap & Capture Designs/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /^🐟 Fish Traps$/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Crayfish & Crabs/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Bird & Small-Animal Live Capture/ })).toBeInTheDocument()
+    expect(screen.getByText(/Modular Live-Capture System/)).toBeInTheDocument()
+  })
+
+  it('disambiguates the two identically-named "Counterweight Cage Door" designs from the source material', () => {
+    render(<SnaresContent />)
+    expect(screen.getByText('39.')).toBeInTheDocument()
+    expect(screen.getByText(/Counterweight Cage Door — Pulley Variant/)).toBeInTheDocument()
+  })
+
+  it('does not repeat the old Figure-4 Deadfall paragraph now that the new designs cover it in more detail', () => {
+    // Regression check: the old page's brief Figure-4 Deadfall paragraph is
+    // superseded by the new, more detailed "Figure-Four Trigger" and
+    // "Figure-Four Variation" designs (#2 and #3).
+    render(<SnaresContent />)
+    expect(screen.queryByRole('heading', { name: /^Figure-4 Deadfall$/ })).not.toBeInTheDocument()
+    expect(screen.getByText(/Figure-Four Trigger/)).toBeInTheDocument()
+    expect(screen.getByText(/Figure-Four Variation/)).toBeInTheDocument()
   })
 })
 
