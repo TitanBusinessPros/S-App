@@ -186,6 +186,7 @@
 
 .feature-list-card h2 {
   font-size: 1rem;
+  text-align: center;
 }
 
 .feature-list-empty {
@@ -249,6 +250,7 @@
 
 .offline-areas-card h2 {
   font-size: 1rem;
+  text-align: center;
 }
 
 .offline-areas-note {

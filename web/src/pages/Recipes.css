@@ -6,6 +6,7 @@
   font-size: 1rem;
   margin-bottom: 0.75rem;
   color: var(--danger);
+  text-align: center;
 }
 
 .recipe-safety-list {
@@ -29,6 +30,7 @@
   font-size: 1rem;
   margin-bottom: 0.5rem;
   color: var(--danger);
+  text-align: center;
 }
 
 .protected-birds-intro {
@@ -53,6 +55,7 @@
   font-size: 0.95rem;
   margin-bottom: 0.5rem;
   color: var(--danger);
+  text-align: center;
 }
 
 .fish-safety-card p {
@@ -77,6 +80,7 @@
   font-size: 0.95rem;
   margin-bottom: 0.5rem;
   color: var(--danger);
+  text-align: center;
 }
 
 .frog-safety-card p {
@@ -103,6 +107,7 @@
   font-size: 0.95rem;
   margin-bottom: 0.5rem;
   color: var(--danger);
+  text-align: center;
 }
 
 .animal-group-guide-card > p {
