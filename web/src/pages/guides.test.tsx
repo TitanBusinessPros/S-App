@@ -38,12 +38,26 @@ describe('FirstAidContent', () => {
 })
 
 describe('ShelterContent', () => {
-  it('renders a shelter option for each major climate', () => {
+  it('renders the universal rules and all 15 shelter designs', () => {
     render(<ShelterContent />)
+    expect(screen.getByRole('heading', { name: /Universal Shelter Rules/ })).toBeInTheDocument()
+    expect(screen.getByText(/Pick a safe site/)).toBeInTheDocument()
     expect(screen.getByText(/Debris Hut/)).toBeInTheDocument()
-    expect(screen.getByText(/Shade Shelter/)).toBeInTheDocument()
-    expect(screen.getByText(/Quinzhee/)).toBeInTheDocument()
-    expect(screen.getByText(/Lean-To/)).toBeInTheDocument()
+    expect(screen.getByText(/Hot-Weather Shade Fly/)).toBeInTheDocument()
+    expect(screen.getByText(/Quinzee Snow Shelter/)).toBeInTheDocument()
+    expect(screen.getByText(/Lean-To Tarp/)).toBeInTheDocument()
+  })
+
+  it('renders a full build for one specific design, including its key detail', () => {
+    render(<ShelterContent />)
+    expect(screen.getByText(/Run a ridgeline between two trees at knee-to-waist height/)).toBeInTheDocument()
+    expect(screen.getByText(/Lower equals warmer and more wind-resistant/)).toBeInTheDocument()
+  })
+
+  it('renders the "things I would not recommend" warnings', () => {
+    render(<ShelterContent />)
+    expect(screen.getByRole('heading', { name: /Not Recommend/ })).toBeInTheDocument()
+    expect(screen.getByText(/A fire inside or immediately beside a tent/)).toBeInTheDocument()
   })
 })
 

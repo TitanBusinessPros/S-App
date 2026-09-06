@@ -1,0 +1,74 @@
+.shelter-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+  padding: 0.75rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.shelter-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--accent);
+  border: 1px solid var(--border-bright);
+}
+
+.shelter-nav-link:hover {
+  background: var(--bg-card);
+}
+
+.guide-section[id] {
+  scroll-margin-top: 1rem;
+}
+
+/* Sub-groups within the Universal Shelter Rules section — a bold label
+   (not a heading, matching the app's existing .recipe-subheading pattern)
+   over its own bullet list, so 5 grouped rules read clearly without each
+   one competing with the section's own centered <h2>. */
+.shelter-rule {
+  margin-top: 1rem;
+}
+
+.shelter-rule:first-of-type {
+  margin-top: 0.5rem;
+}
+
+.shelter-subheading {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  margin-top: 0.6rem;
+  margin-bottom: 0.2rem;
+}
+
+/* The 15 shelter designs vary a lot in length (a 5-step build vs. an
+   8-step one) — stacked cards (same pattern as Recipes' recipe list)
+   read better than a grid, which would force uneven row heights. */
+.shelter-design-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.shelter-design-card p {
+  font-size: 0.88rem;
+  margin-bottom: 0.4rem;
+}
+
+.shelter-key-detail {
+  font-size: 0.82rem;
+  color: var(--accent-2);
+  margin-top: 0.6rem;
+}
