@@ -36,8 +36,12 @@ export function Terms() {
         any plant, fungus, insect, or animal with a qualified local expert before consuming it, and never eat
         anything you cannot confidently identify as safe. First-aid content is not a substitute for training,
         certification, or professional medical treatment; seek emergency services for any serious injury or
-        illness. You assume full responsibility and all risk for any outdoor, survival, foraging, or first-aid
-        activity you undertake, whether or not based on information from the Service.
+        illness. Trap, snare, and fishing-device content is provided for educational and practice purposes only;
+        hunting, trapping, and fishing are heavily regulated by species, method, location, season, and land
+        ownership, and you are solely responsible for confirming and complying with all applicable licensing and
+        wildlife laws before attempting to deploy any such device. You assume full responsibility and all risk
+        for any outdoor, survival, foraging, trapping, or first-aid activity you undertake, whether or not based
+        on information from the Service.
       </p>
 
       <h2>3. Accounts</h2>
