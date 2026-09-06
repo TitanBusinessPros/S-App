@@ -13,6 +13,7 @@ function TrapDesignCard({ design }: { design: TrapDesign }) {
     <details className="trap-design">
       <summary>
         <span>
+          <span className="trap-design-toggle" aria-hidden="true">▸</span>{' '}
           <span className="trap-design-num">{design.num}.</span> {design.name}
         </span>
         <span className="trap-design-meta mono">{design.type} · {difficultyStars(design.difficulty)}</span>

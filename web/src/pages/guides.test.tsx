@@ -115,6 +115,21 @@ describe('SnaresContent', () => {
     expect(screen.getByText(/Modular Live-Capture System/)).toBeInTheDocument()
   })
 
+  it('renders full construction steps and materials for every trap design, and a visible expand/collapse toggle', () => {
+    // Regression check: a real user reported the build instructions
+    // looked "left out" — the data and DOM were actually always complete
+    // (each design is a collapsed-by-default <details> disclosure), but a
+    // CSS override (display: flex on <summary>) suppressed the native
+    // disclosure marker in most browsers, so nothing visually hinted that
+    // a row was expandable. This checks both that the content is present
+    // and that a visible toggle icon renders per design.
+    const { container } = render(<SnaresContent />)
+    expect(screen.getByText(/Find a sturdy stick approximately the length of your forearm/)).toBeInTheDocument()
+    expect(screen.getByText(/Build several standardized cage panels/)).toBeInTheDocument()
+    const toggles = container.querySelectorAll('.trap-design-toggle')
+    expect(toggles.length).toBe(100)
+  })
+
   it('disambiguates the two identically-named "Counterweight Cage Door" designs from the source material', () => {
     render(<SnaresContent />)
     expect(screen.getByText('39.')).toBeInTheDocument()
