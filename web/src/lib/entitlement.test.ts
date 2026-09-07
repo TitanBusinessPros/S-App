@@ -43,12 +43,19 @@ describe('computeEntitlement', () => {
     expect(result).toMatchObject({ hasAccess: true, isTrialing: true, trialDaysLeft: 6, tier: 'trial' })
   })
 
-  it('does not round a clock-skew-sized sliver of extra time up to a whole extra day', () => {
-    // Regression test: right at trial start, trialEndsAt is essentially
-    // exactly "now + 3 days". A few hundred ms of clock skew between the
-    // server and the device used to push this over the 3-day boundary and
-    // display "4 days left" until the next refresh -- see CLOCK_SKEW_BUFFER_MS.
-    const result = computeEntitlement(profile({ tier: 'trial', trialEndsAt: NOW + 3 * DAY + 500 }), NOW)
+  it('never reports more days left than the trial actually granted, however stale "now" is', () => {
+    // Regression test for the real-world bug: createdAt and trialEndsAt are
+    // always exactly TRIAL_DURATION_MS apart (both set server-side in the
+    // same write -- see createUserProfile), so a 3-day trial's granted
+    // window is always exactly 3 days here. But the device computing "now"
+    // can lag the server by anywhere from a fraction of a second (clock
+    // skew) to tens of seconds (Cloud Function cold start + network
+    // round-trip) right when the trial starts -- previously this pushed
+    // the *observed* days left over the 3-day boundary and displayed "4"
+    // until a later reload caught up. A device lagging by even a full
+    // minute must still show 3, not 4.
+    const account = profile({ tier: 'trial', createdAt: NOW, trialEndsAt: NOW + 3 * DAY })
+    const result = computeEntitlement(account, NOW - 60_000)
     expect(result.trialDaysLeft).toBe(3)
   })
 
