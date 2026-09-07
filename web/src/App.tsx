@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './lib/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -10,7 +11,6 @@ import { Terms } from './pages/Terms'
 import { Privacy } from './pages/Privacy'
 import { Dashboard } from './pages/Dashboard'
 import { Compass } from './pages/Compass'
-import { MapWater } from './pages/MapWater'
 import { FirstAid } from './pages/FirstAid'
 import { Shelter } from './pages/Shelter'
 import { FindingWater } from './pages/FindingWater'
@@ -20,6 +20,21 @@ import { WaterPurification } from './pages/WaterPurification'
 import { Waypoints } from './pages/Waypoints'
 import { SpeciesNearby } from './pages/SpeciesNearby'
 import { Recipes } from './pages/Recipes'
+
+// Lazy-loaded on its own: MapWater pulls in Leaflet + MapLibre GL (for the
+// OpenFreeMap basemap), which pushed the app's precached bundle over the
+// PWA's 2 MiB service-worker limit when it lived in the main chunk. Split
+// into its own chunk so that weight only downloads (and gets precached) for
+// someone who actually opens the Water & Terrain Map, not every install.
+const MapWater = lazy(() => import('./pages/MapWater').then((m) => ({ default: m.MapWater })))
+
+function MapWaterFallback() {
+  return (
+    <div style={{ display: 'grid', placeItems: 'center', height: '100vh' }}>
+      <p className="mono">Loading map…</p>
+    </div>
+  )
+}
 
 export default function App() {
   return (
@@ -50,7 +65,9 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <PaidFeatureRoute>
-                  <MapWater />
+                  <Suspense fallback={<MapWaterFallback />}>
+                    <MapWater />
+                  </Suspense>
                 </PaidFeatureRoute>
               </ProtectedRoute>
             }

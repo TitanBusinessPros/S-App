@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { MapContainer, TileLayer, Circle, Marker, Popup, useMap } from 'react-leaflet'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import { maplibreGL } from '@maplibre/maplibre-gl-leaflet'
 import { Shell } from '../components/Shell'
 import { useAuth } from '../lib/AuthContext'
 import { useGeolocation } from '../lib/useGeolocation'
@@ -38,18 +40,45 @@ type BasemapStyle = 'street' | 'topo'
 // shaded relief, elevation-informed terrain) — same National Map family as
 // the water data already used here. No API key, no billing: verified live
 // (a direct tile fetch succeeded) before wiring this in.
-const BASEMAPS: Record<BasemapStyle, { url: string; attribution: string; label: string }> = {
-  street: {
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    label: 'Street map',
-  },
-  topo: {
-    // Esri tile-cache URL order is z/y/x (not the usual z/x/y).
-    url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'USGS National Map — USGSTopo (public domain)',
-    label: 'Topographic map',
-  },
+const TOPO_BASEMAP = {
+  // Esri tile-cache URL order is z/y/x (not the usual z/x/y).
+  url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}',
+  attribution: 'USGS National Map — USGSTopo (public domain)',
+}
+
+// The "street" basemap used to be raw tile.openstreetmap.org raster tiles.
+// OSM's own tile-usage policy warns commercial/heavy use may be blocked
+// without notice, which is exactly the ToS risk that got the Weather
+// feature removed for a different API (functions/src -- see README).
+// OpenFreeMap is a vector-tile alternative verified against its own ToS
+// (Feb 2025): no non-commercial restriction, unlike that Weather case --
+// see https://openfreemap.org. "Liberty" is its general-purpose street
+// style; other styles (Positron, Bright, Dark, Fiord) exist if the look
+// ever needs to change.
+const OPENFREEMAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty'
+const OPENFREEMAP_ATTRIBUTION =
+  '<a href="https://openfreemap.org" target="_blank" rel="noreferrer">OpenFreeMap</a> ' +
+  '&copy; <a href="https://www.openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> ' +
+  'Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>'
+
+/**
+ * Adds OpenFreeMap's vector-tile style to the Leaflet map via the MapLibre
+ * GL Leaflet binding, instead of rewriting the whole map to native MapLibre
+ * GL -- every other map feature here (markers, circles, popups, "Re-center
+ * on me") stays plain react-leaflet. This layer isn't a react-leaflet
+ * <TileLayer>, so it manages its own attribution credit manually.
+ */
+function OpenFreeMapLayer() {
+  const map = useMap()
+  useEffect(() => {
+    const gl = maplibreGL({ style: OPENFREEMAP_STYLE_URL }).addTo(map)
+    map.attributionControl.addAttribution(OPENFREEMAP_ATTRIBUTION)
+    return () => {
+      map.attributionControl.removeAttribution(OPENFREEMAP_ATTRIBUTION)
+      gl.remove()
+    }
+  }, [map])
+  return null
 }
 
 function waterIcon(type: WaterFeature['waterType']) {
@@ -421,13 +450,13 @@ export function MapWater() {
       <div className="map-layout">
         <div className="card map-card">
           {mapCenter ? (
-            <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={11} scrollWheelZoom>
+            <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={11} minZoom={1} scrollWheelZoom>
               <RecenterMap lat={mapCenter.lat} lng={mapCenter.lng} />
-              <TileLayer
-                key={basemapStyle}
-                attribution={BASEMAPS[basemapStyle].attribution}
-                url={BASEMAPS[basemapStyle].url}
-              />
+              {basemapStyle === 'street' ? (
+                <OpenFreeMapLayer />
+              ) : (
+                <TileLayer key="topo" attribution={TOPO_BASEMAP.attribution} url={TOPO_BASEMAP.url} />
+              )}
               <button
                 type="button"
                 className="btn basemap-toggle"

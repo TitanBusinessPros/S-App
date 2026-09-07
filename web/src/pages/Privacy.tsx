@@ -87,6 +87,12 @@ export function Privacy() {
           data, fetched by our own Cloud Functions on your behalf (these two do not receive your location or IP
           directly from your device).
         </li>
+        <li>
+          <strong>OpenFreeMap</strong> — map tiles for the Water &amp; Terrain Map. Unlike the sources above,
+          your device loads map imagery directly from OpenFreeMap as you pan and zoom, so it receives standard
+          web request data (such as your IP address) the same way any map provider would; OpenFreeMap's own
+          privacy policy states it does not log IP addresses except temporarily during a security incident.
+        </li>
       </ul>
 
       <h2>6. Data Retention</h2>
