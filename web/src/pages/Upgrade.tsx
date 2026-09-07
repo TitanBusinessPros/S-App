@@ -55,8 +55,9 @@ export function Upgrade() {
               </p>
 
               <ul className="upgrade-benefits">
-                <li>🧭 Compass, water &amp; terrain maps, and weather</li>
-                <li>🌿 Species, first aid, shelter, snares &amp; recipes</li>
+                <li>🗺️ Water &amp; terrain map, waypoints &amp; trail, plants/wildlife/wood</li>
+                <li>⛺ Shelter, finding water, snares &amp; traps, fire starting, water purification, recipes</li>
+                <li className="upgrade-benefits-note">Compass and First Aid are always free, trial or not.</li>
               </ul>
 
               <a

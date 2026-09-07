@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Shell } from '../components/Shell'
+import { useEntitlement } from '../lib/entitlement'
 import './Dashboard.css'
 
 interface Feature {
@@ -23,7 +24,16 @@ const FEATURES: Feature[] = [
   { icon: '🍳', title: 'Wild Game Recipes', description: 'Field-to-table recipes, indexed A-Z by animal.', to: '/app/recipes' },
 ]
 
+// These two stay free forever, even after the 3-day trial ends -- every
+// other feature above locks behind a subscription once trial access runs
+// out (see lib/entitlement.ts and components/PaidFeatureRoute.tsx, which
+// enforces the same list at the route level so a locked page isn't
+// reachable by direct URL either).
+const ALWAYS_FREE_ROUTES = new Set(['/app/compass', '/app/first-aid'])
+
 export function Dashboard() {
+  const { loading, hasAccess } = useEntitlement()
+
   return (
     <Shell>
       <div className="dash-header">
@@ -41,23 +51,33 @@ export function Dashboard() {
             </>
           )
 
-          return feature.to ? (
+          if (!feature.to) {
+            return (
+              <div
+                key={feature.title}
+                className="card feature-card feature-card-disabled"
+                title={feature.description}
+              >
+                {content}
+              </div>
+            )
+          }
+
+          // Never shows as locked while entitlement is still loading -- that
+          // would flash "locked" at trial/paid users for a moment on every
+          // page load, since useEntitlement resolves async from Firestore.
+          const locked = !loading && !hasAccess && !ALWAYS_FREE_ROUTES.has(feature.to)
+
+          return (
             <Link
               key={feature.title}
-              to={feature.to}
-              className="card feature-card"
-              title={feature.description}
+              to={locked ? '/app/upgrade' : feature.to}
+              className={`card feature-card${locked ? ' feature-card-locked' : ''}`}
+              title={locked ? `${feature.description} — subscribe to unlock` : feature.description}
             >
+              {locked && <span className="badge feature-card-lock-badge">🔒</span>}
               {content}
             </Link>
-          ) : (
-            <div
-              key={feature.title}
-              className="card feature-card feature-card-disabled"
-              title={feature.description}
-            >
-              {content}
-            </div>
           )
         })}
       </div>
