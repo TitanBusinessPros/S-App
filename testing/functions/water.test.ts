@@ -48,6 +48,10 @@ const {
   LAYER_FLOWLINE,
   LAYER_SPRING,
 } = require("../../functions/src/water");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { DAILY_WATER_SCAN_LIMIT } = require("../../functions/src/waterScanCredits");
+
+const AUTH = { uid: "test-uid" };
 
 const METADATA_JSON = { copyrightText: "Credits: USGS TNM / NGTOC – 3D National Hydrography Program (3DHP.) Data refreshed August 5, 2026." };
 const SEARCH_LAT = 35.5;
@@ -186,7 +190,7 @@ describe("getWaterFeatures", () => {
     global.fetch = mockUsgsFetch({ 5: { 60: waterbody, 50: flowline } }) as unknown as typeof fetch;
 
     const wrapped = testEnv.wrap(getWaterFeatures);
-    const result = await wrapped({ data: { lat: SEARCH_LAT, lng: SEARCH_LNG, radiusMiles: 100 } });
+    const result = await wrapped({ data: { lat: SEARCH_LAT, lng: SEARCH_LNG, radiusMiles: 100 }, auth: AUTH });
 
     expect(result.count).toBe(TARGET_COUNT);
     expect(result.features).toHaveLength(TARGET_COUNT);
@@ -213,7 +217,7 @@ describe("getWaterFeatures", () => {
     }) as unknown as typeof fetch;
 
     const wrapped = testEnv.wrap(getWaterFeatures);
-    const result = await wrapped({ data: { lat: SEARCH_LAT, lng: SEARCH_LNG, radiusMiles: 100 } });
+    const result = await wrapped({ data: { lat: SEARCH_LAT, lng: SEARCH_LNG, radiusMiles: 100 }, auth: AUTH });
 
     expect(result.searchedRadiusMiles).toBe(15);
     expect(result.count).toBe(TARGET_COUNT);
@@ -231,7 +235,7 @@ describe("getWaterFeatures", () => {
     }) as unknown as typeof fetch;
 
     const wrapped = testEnv.wrap(getWaterFeatures);
-    const result = await wrapped({ data: { lat: SEARCH_LAT, lng: SEARCH_LNG, radiusMiles: 20 } });
+    const result = await wrapped({ data: { lat: SEARCH_LAT, lng: SEARCH_LNG, radiusMiles: 20 }, auth: AUTH });
 
     expect(result.searchedRadiusMiles).toBe(20);
     expect(result.count).toBe(10);
@@ -263,7 +267,7 @@ describe("getWaterFeatures", () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     const wrapped = testEnv.wrap(getWaterFeatures);
-    const result = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 } });
+    const result = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 }, auth: AUTH });
 
     expect(fetchMock).not.toHaveBeenCalled();
     expect(result.fromCache).toBe(true);
@@ -297,7 +301,7 @@ describe("getWaterFeatures", () => {
     global.fetch = mockUsgsFetch({ 5: { 60: fresh, 50: [], 20: [] } }) as unknown as typeof fetch;
 
     const wrapped = testEnv.wrap(getWaterFeatures);
-    const result = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 5 } });
+    const result = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 5 }, auth: AUTH });
 
     expect(result.fromCache).toBe(false);
     expect(result.count).toBe(1);
@@ -307,10 +311,68 @@ describe("getWaterFeatures", () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 503 }) as unknown as typeof fetch;
 
     const wrapped = testEnv.wrap(getWaterFeatures);
-    await expect(wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 } })).rejects.toThrow(/returned an error/);
+    await expect(wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 }, auth: AUTH })).rejects.toThrow(
+      /returned an error/,
+    );
 
     const cacheKey = "35.5_-97.5_10";
     expect(store[cacheKey]?.resultComplete).toBeUndefined();
     expect(store[cacheKey]?.features).toBeUndefined();
+  });
+
+  describe("water-scan credit limit", () => {
+    // A pre-seeded cache hit, so these tests exercise the credit gate
+    // without needing to mock a USGS fetch too — every call still costs a
+    // credit on a cache hit, since the limit is about button presses, not
+    // USGS load (see functions/src/waterScanCredits.ts).
+    function seedCacheHit() {
+      const now = Date.now();
+      store["35.5_-97.5_10"] = {
+        lat: 35.5,
+        lng: -97.5,
+        radiusMiles: 10,
+        searchedRadiusMiles: 5,
+        features: [],
+        count: 0,
+        totalFound: 0,
+        resultComplete: true,
+        source: "usgs-3dhp",
+        attribution: "x",
+        sourceRefreshDate: null,
+        fetchedAt: now,
+        expiresAt: now + 1000 * 60 * 60,
+        schemaVersion: 2,
+        fetchLockedAt: null,
+      };
+    }
+
+    it("rejects an unauthenticated call before touching the cache or credits", async () => {
+      const wrapped = testEnv.wrap(getWaterFeatures);
+      await expect(wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 } })).rejects.toThrow(/Sign in/);
+    });
+
+    it("includes creditsRemaining in the result and decrements it across calls", async () => {
+      seedCacheHit();
+      const wrapped = testEnv.wrap(getWaterFeatures);
+
+      const first = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 }, auth: AUTH });
+      expect(first.creditsRemaining).toBe(DAILY_WATER_SCAN_LIMIT - 1);
+
+      const second = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 }, auth: AUTH });
+      expect(second.creditsRemaining).toBe(DAILY_WATER_SCAN_LIMIT - 2);
+    });
+
+    it("rejects the call after DAILY_WATER_SCAN_LIMIT scans within 24h, even on what would be a cache hit", async () => {
+      seedCacheHit();
+      const wrapped = testEnv.wrap(getWaterFeatures);
+
+      for (let i = 0; i < DAILY_WATER_SCAN_LIMIT; i++) {
+        await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 }, auth: AUTH });
+      }
+
+      await expect(
+        wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 }, auth: AUTH }),
+      ).rejects.toMatchObject({ code: "resource-exhausted" });
+    });
   });
 });

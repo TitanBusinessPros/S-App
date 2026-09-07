@@ -40,7 +40,9 @@ export function isSavedAreaStale(area: Pick<SavedWaterArea, 'fetchedAt'>): boole
  * the existing doc rather than creating a duplicate. */
 export async function saveWaterAreaOffline(
   uid: string,
-  params: { lat: number; lng: number; radiusMiles: number; result: GetWaterFeaturesResult },
+  // creditsRemaining is deliberately excluded -- it's about the live scan
+  // rate limit, not something a stored offline snapshot needs to carry.
+  params: { lat: number; lng: number; radiusMiles: number; result: Omit<GetWaterFeaturesResult, 'creditsRemaining'> },
 ): Promise<void> {
   const cacheKey = computeCacheKey(params.lat, params.lng, params.radiusMiles)
   const ref = doc(db, 'users', uid, 'savedWaterAreas', cacheKey)
