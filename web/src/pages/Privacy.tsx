@@ -28,12 +28,15 @@ export function Privacy() {
 
       <h3>Location data</h3>
       <p>
-        Features like the Water &amp; Terrain Map, Species Nearby, and Compass ask your browser for your
-        device's precise location, with your permission, to fetch results near you. That location is sent, per
-        request, to our own Cloud Functions (water features, species, place name). We do not permanently store your
-        location tied to your identity, with one exception: if you choose to save a water-area search for
-        offline use, that specific location, radius, and result data is stored in your own private account
-        record until you delete it.
+        Certain features in the Service need to know your device's precise location in order to work — for
+        example, to find water sources or wildlife near you, or to calculate your position for navigation. When
+        you open one of those features, your browser or device will ask your permission before sharing it, and
+        that feature won't function if you decline. For features that look something up on our servers (like
+        nearby water or species data), your location is sent, per request, to our own Cloud Functions; other
+        location-based features keep that data entirely on your own device and never send it to us. We do not
+        permanently store your location tied to your identity, with one exception: if you choose to save a
+        water-area search for offline use, that specific location, radius, and result data is stored in your
+        own private account record until you delete it.
       </p>
 
       <h3>Billing information</h3>
