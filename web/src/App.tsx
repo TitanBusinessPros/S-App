@@ -10,7 +10,6 @@ import { Privacy } from './pages/Privacy'
 import { Dashboard } from './pages/Dashboard'
 import { Compass } from './pages/Compass'
 import { MapWater } from './pages/MapWater'
-import { Weather } from './pages/Weather'
 import { FirstAid } from './pages/FirstAid'
 import { Shelter } from './pages/Shelter'
 import { FindingWater } from './pages/FindingWater'
@@ -50,14 +49,6 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <MapWater />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/app/weather"
-            element={
-              <ProtectedRoute>
-                <Weather />
               </ProtectedRoute>
             }
           />

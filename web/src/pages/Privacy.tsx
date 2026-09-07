@@ -1,6 +1,6 @@
 import { LegalPageLayout } from '../components/LegalPageLayout'
 
-const LAST_UPDATED = 'September 5, 2026'
+const LAST_UPDATED = 'September 7, 2026'
 
 export function Privacy() {
   return (
@@ -28,11 +28,10 @@ export function Privacy() {
 
       <h3>Location data</h3>
       <p>
-        Features like Weather, the Water &amp; Terrain Map, Species Nearby, and Compass ask your browser for
-        your device's precise location, with your permission, to fetch results near you. That location is sent,
-        per request, either to our own Cloud Functions (water features, species, place name) or directly from
-        your device to Open-Meteo (weather — see "Third-Party Services" below). We do not permanently store
-        your location tied to your identity, with one exception: if you choose to save a water-area search for
+        Features like the Water &amp; Terrain Map, Species Nearby, and Compass ask your browser for your
+        device's precise location, with your permission, to fetch results near you. That location is sent, per
+        request, to our own Cloud Functions (water features, species, place name). We do not permanently store your
+        location tied to your identity, with one exception: if you choose to save a water-area search for
         offline use, that specific location, radius, and result data is stored in your own private account
         record until you delete it.
       </p>
@@ -78,10 +77,6 @@ export function Privacy() {
       <ul>
         <li><strong>Google</strong> — sign-in and the Firebase infrastructure the app runs on.</li>
         <li><strong>Stripe</strong> — payment processing for subscriptions.</li>
-        <li>
-          <strong>Open-Meteo</strong> — weather forecasts; your device location and IP address are sent directly
-          to Open-Meteo by your browser for this feature.
-        </li>
         <li>
           <strong>USGS (National Map)</strong> and <strong>GBIF</strong> — water-feature and species-occurrence
           data, fetched by our own Cloud Functions on your behalf (these two do not receive your location or IP
