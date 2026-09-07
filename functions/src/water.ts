@@ -2,6 +2,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { getFirestore } from "firebase-admin/firestore";
 import { consumeWaterScanCredit } from "./waterScanCredits";
+import { requirePaidAccess } from "./entitlement";
 
 export const MIN_RADIUS_MILES = 1;
 export const MAX_RADIUS_MILES = 100;
@@ -383,7 +384,11 @@ function toResult(doc: CacheDoc, fromCache: boolean, creditsRemaining: number): 
  * point — fixes both, and an expanding-radius search (fetchNearestFeatures)
  * means we still don't have to fetch more than we need to find them.
  *
- * Rate-limited to DAILY_WATER_SCAN_LIMIT calls per signed-in user per
+ * Requires an active trial/premium/gold tier (see entitlement.ts) — a
+ * locked account gets permission-denied here even if it calls this function
+ * directly, bypassing the client's PaidFeatureRoute gate.
+ *
+ * Also rate-limited to DAILY_WATER_SCAN_LIMIT calls per signed-in user per
  * rolling 24h window (see waterScanCredits.ts) — every call costs a credit,
  * cache hit or not, since the limit is about how often the "Scan for Water"
  * button gets pressed, not about USGS load specifically.
@@ -406,6 +411,7 @@ export const getWaterFeatures = onCall({ invoker: "public", timeoutSeconds: 120 
   if (!uid) {
     throw new HttpsError("unauthenticated", "Sign in to search for water.");
   }
+  await requirePaidAccess(uid);
   const { creditsRemaining } = await consumeWaterScanCredit(uid);
 
   const clampedRadius = clampRadiusMiles(radiusMiles);

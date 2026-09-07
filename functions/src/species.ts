@@ -2,6 +2,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { SPECIES_DATA, type SpeciesEntry } from "./speciesData";
 import { clampRadiusMiles } from "./water";
+import { requirePaidAccess } from "./entitlement";
 
 export function isActiveInMonth(entry: SpeciesEntry, month: number): boolean {
   return entry.activeMonths.includes(month);
@@ -51,6 +52,10 @@ export async function hasNearbyOccurrence(
  * is left out rather than guessed at. If a single species' GBIF lookup
  * fails (network hiccup), that species is excluded from this response
  * rather than failing the whole request.
+ *
+ * Requires an active trial/premium/gold tier (see entitlement.ts) — a
+ * locked account gets permission-denied here even if it calls this function
+ * directly, bypassing the client's PaidFeatureRoute gate.
  */
 export const getSpeciesNearby = onCall({ invoker: "public" }, async (request) => {
   const { lat, lng, radiusMiles, month } = (request.data ?? {}) as {
@@ -74,6 +79,12 @@ export const getSpeciesNearby = onCall({ invoker: "public" }, async (request) =>
   if (month < 1 || month > 12) {
     throw new HttpsError("invalid-argument", "month must be between 1 and 12.");
   }
+
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Sign in to see nearby species.");
+  }
+  await requirePaidAccess(uid);
 
   const clampedRadius = clampRadiusMiles(radiusMiles);
   const radiusKm = milesToKm(clampedRadius);

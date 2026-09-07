@@ -2,23 +2,26 @@ import functionsTest from "firebase-functions-test";
 
 const testEnv = functionsTest();
 
-// ---- In-memory Firestore mock (collection/doc/get/set + runTransaction) ----
+// ---- In-memory Firestore mock: path-prefixed (collection/doc) keys, so
+// water_area_cache, waterScanCredits, and users can share one flat store
+// without colliding when a uid happens to be used as the doc id in more
+// than one collection — see billing.test.ts for the same pattern with
+// where()/batch() support added too. ----
 let store: Record<string, any> = {};
 
-const docMock = jest.fn((id: string) => {
-  const ref = {
-    id,
+function docRef(path: string) {
+  return {
+    id: path.split("/").pop() as string,
     get: jest.fn(async () => ({
-      exists: store[id] !== undefined,
-      data: () => store[id],
+      exists: store[path] !== undefined,
+      data: () => store[path],
     })),
     set: jest.fn(async (data: any, opts?: { merge?: boolean }) => {
-      store[id] = opts?.merge ? { ...(store[id] ?? {}), ...data } : data;
+      store[path] = opts?.merge ? { ...(store[path] ?? {}), ...data } : data;
     }),
   };
-  return ref;
-});
-const collectionMock = jest.fn(() => ({ doc: docMock }));
+}
+const collectionMock = jest.fn((name: string) => ({ doc: (id: string) => docRef(`${name}/${id}`) }));
 const runTransactionMock = jest.fn(async (updateFn: (tx: any) => Promise<void> | void) => {
   const tx = {
     get: async (ref: any) => ref.get(),
@@ -52,6 +55,15 @@ const {
 const { DAILY_WATER_SCAN_LIMIT } = require("../../functions/src/waterScanCredits");
 
 const AUTH = { uid: "test-uid" };
+
+/** Every getWaterFeatures call now requires requirePaidAccess (see
+ * entitlement.ts) -- seed a profile that passes it by default so the many
+ * existing tests below (about water-search behavior, not entitlement) don't
+ * each need to do this themselves. The dedicated "paid-feature access gate"
+ * tests override this with a locked profile instead. */
+function seedPaidProfile(uid = AUTH.uid) {
+  store[`users/${uid}`] = { tier: "premium" };
+}
 
 const METADATA_JSON = { copyrightText: "Credits: USGS TNM / NGTOC – 3D National Hydrography Program (3DHP.) Data refreshed August 5, 2026." };
 const SEARCH_LAT = 35.5;
@@ -163,6 +175,7 @@ describe("getWaterFeatures", () => {
 
   beforeEach(() => {
     store = {};
+    seedPaidProfile();
     jest.clearAllMocks();
   });
 
@@ -245,7 +258,7 @@ describe("getWaterFeatures", () => {
 
   it("returns a cache hit without calling USGS again", async () => {
     const now = Date.now();
-    store["35.5_-97.5_10"] = {
+    store["water_area_cache/35.5_-97.5_10"] = {
       lat: 35.5,
       lng: -97.5,
       radiusMiles: 10,
@@ -280,7 +293,7 @@ describe("getWaterFeatures", () => {
     // radiusMiles: 5 keeps this to a single ring (min(5, 5) === 5, which
     // already equals the max requested radius), avoiding needing to model
     // ring-expansion superset behavior in the mock for this test.
-    store["35.5_-97.5_5"] = {
+    store["water_area_cache/35.5_-97.5_5"] = {
       // Old (pre-nearest-100) shape: no searchedRadiusMiles/totalFound, schemaVersion 1.
       lat: 35.5,
       lng: -97.5,
@@ -315,7 +328,7 @@ describe("getWaterFeatures", () => {
       /returned an error/,
     );
 
-    const cacheKey = "35.5_-97.5_10";
+    const cacheKey = "water_area_cache/35.5_-97.5_10";
     expect(store[cacheKey]?.resultComplete).toBeUndefined();
     expect(store[cacheKey]?.features).toBeUndefined();
   });
@@ -327,7 +340,7 @@ describe("getWaterFeatures", () => {
     // USGS load (see functions/src/waterScanCredits.ts).
     function seedCacheHit() {
       const now = Date.now();
-      store["35.5_-97.5_10"] = {
+      store["water_area_cache/35.5_-97.5_10"] = {
         lat: 35.5,
         lng: -97.5,
         radiusMiles: 10,
@@ -373,6 +386,40 @@ describe("getWaterFeatures", () => {
       await expect(
         wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 }, auth: AUTH }),
       ).rejects.toMatchObject({ code: "resource-exhausted" });
+    });
+  });
+
+  describe("paid-feature access gate", () => {
+    // Proves the server actually enforces this -- not just the client's
+    // PaidFeatureRoute -- by calling getWaterFeatures directly for an
+    // account with no active trial/premium/gold, the same way someone
+    // bypassing the UI would.
+    it("rejects a free-tier (trial-expired) account with permission-denied", async () => {
+      store["users/locked-uid"] = { tier: "free" };
+      const wrapped = testEnv.wrap(getWaterFeatures);
+
+      await expect(
+        wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 }, auth: { uid: "locked-uid" } }),
+      ).rejects.toMatchObject({ code: "permission-denied" });
+    });
+
+    it("rejects an account with no profile doc at all", async () => {
+      const wrapped = testEnv.wrap(getWaterFeatures);
+
+      await expect(
+        wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 }, auth: { uid: "no-profile-uid" } }),
+      ).rejects.toMatchObject({ code: "permission-denied" });
+    });
+
+    it("does not consume a water-scan credit for a rejected, locked account", async () => {
+      store["users/locked-uid"] = { tier: "free" };
+      const wrapped = testEnv.wrap(getWaterFeatures);
+
+      await expect(
+        wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10 }, auth: { uid: "locked-uid" } }),
+      ).rejects.toMatchObject({ code: "permission-denied" });
+
+      expect(store["waterScanCredits/locked-uid"]).toBeUndefined();
     });
   });
 });
