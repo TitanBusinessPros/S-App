@@ -13,6 +13,16 @@ export interface Entitlement {
 }
 
 /**
+ * Small buffer subtracted before rounding trialDaysLeft up, so a moment of
+ * clock skew between the server (which sets trialEndsAt) and the user's own
+ * device doesn't tip an exact "N days left" over into "N+1" -- e.g. showing
+ * "4 days left" for a brand-new 3-day trial until the next page load, when
+ * real elapsed time has pushed it back under the boundary. Any gap bigger
+ * than this still counts as a genuine extra day, same as before.
+ */
+const CLOCK_SKEW_BUFFER_MS = 60_000
+
+/**
  * Pure so it's trivial to unit test — no server call needed. Trial expiry
  * is decided here, client-side, by comparing trialEndsAt against "now"
  * rather than by any server-side job flipping the tier field. That's a
@@ -30,7 +40,9 @@ export function computeEntitlement(profile: UserProfile | null, now: number = Da
 
   if (profile.tier === 'trial' && profile.trialEndsAt !== null) {
     const stillTrialing = profile.trialEndsAt > now
-    const trialDaysLeft = stillTrialing ? Math.max(1, Math.ceil((profile.trialEndsAt - now) / 86_400_000)) : 0
+    const trialDaysLeft = stillTrialing
+      ? Math.max(1, Math.ceil((profile.trialEndsAt - now - CLOCK_SKEW_BUFFER_MS) / 86_400_000))
+      : 0
     return { loading: false, hasAccess: stillTrialing, isTrialing: stillTrialing, trialDaysLeft, tier: profile.tier }
   }
 
