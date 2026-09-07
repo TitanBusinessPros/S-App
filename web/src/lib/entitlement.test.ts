@@ -39,8 +39,17 @@ describe('computeEntitlement', () => {
   })
 
   it('grants access during an active trial and reports days left', () => {
-    const result = computeEntitlement(profile({ tier: 'trial', trialEndsAt: NOW + 5 * DAY + 1 }), NOW)
+    const result = computeEntitlement(profile({ tier: 'trial', trialEndsAt: NOW + 5 * DAY + 12 * 60 * 60 * 1000 }), NOW)
     expect(result).toMatchObject({ hasAccess: true, isTrialing: true, trialDaysLeft: 6, tier: 'trial' })
+  })
+
+  it('does not round a clock-skew-sized sliver of extra time up to a whole extra day', () => {
+    // Regression test: right at trial start, trialEndsAt is essentially
+    // exactly "now + 3 days". A few hundred ms of clock skew between the
+    // server and the device used to push this over the 3-day boundary and
+    // display "4 days left" until the next refresh -- see CLOCK_SKEW_BUFFER_MS.
+    const result = computeEntitlement(profile({ tier: 'trial', trialEndsAt: NOW + 3 * DAY + 500 }), NOW)
+    expect(result.trialDaysLeft).toBe(3)
   })
 
   it('rounds a trial with only hours left up to 1 day, never 0', () => {
