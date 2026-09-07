@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './lib/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { PaidFeatureRoute } from './components/PaidFeatureRoute'
 import { AdminRoute } from './components/AdminRoute'
 import { Login } from './pages/Login'
 import { Upgrade } from './pages/Upgrade'
@@ -48,7 +49,9 @@ export default function App() {
             path="/app/map"
             element={
               <ProtectedRoute>
-                <MapWater />
+                <PaidFeatureRoute>
+                  <MapWater />
+                </PaidFeatureRoute>
               </ProtectedRoute>
             }
           />
@@ -64,7 +67,9 @@ export default function App() {
             path="/app/shelter"
             element={
               <ProtectedRoute>
-                <Shelter />
+                <PaidFeatureRoute>
+                  <Shelter />
+                </PaidFeatureRoute>
               </ProtectedRoute>
             }
           />
@@ -72,7 +77,9 @@ export default function App() {
             path="/app/water-sourcing"
             element={
               <ProtectedRoute>
-                <FindingWater />
+                <PaidFeatureRoute>
+                  <FindingWater />
+                </PaidFeatureRoute>
               </ProtectedRoute>
             }
           />
@@ -80,7 +87,9 @@ export default function App() {
             path="/app/snares"
             element={
               <ProtectedRoute>
-                <Snares />
+                <PaidFeatureRoute>
+                  <Snares />
+                </PaidFeatureRoute>
               </ProtectedRoute>
             }
           />
@@ -88,7 +97,9 @@ export default function App() {
             path="/app/fire-starting"
             element={
               <ProtectedRoute>
-                <FireStarting />
+                <PaidFeatureRoute>
+                  <FireStarting />
+                </PaidFeatureRoute>
               </ProtectedRoute>
             }
           />
@@ -96,7 +107,9 @@ export default function App() {
             path="/app/water-purification"
             element={
               <ProtectedRoute>
-                <WaterPurification />
+                <PaidFeatureRoute>
+                  <WaterPurification />
+                </PaidFeatureRoute>
               </ProtectedRoute>
             }
           />
@@ -104,7 +117,9 @@ export default function App() {
             path="/app/waypoints"
             element={
               <ProtectedRoute>
-                <Waypoints />
+                <PaidFeatureRoute>
+                  <Waypoints />
+                </PaidFeatureRoute>
               </ProtectedRoute>
             }
           />
@@ -112,7 +127,9 @@ export default function App() {
             path="/app/species"
             element={
               <ProtectedRoute>
-                <SpeciesNearby />
+                <PaidFeatureRoute>
+                  <SpeciesNearby />
+                </PaidFeatureRoute>
               </ProtectedRoute>
             }
           />
@@ -120,7 +137,9 @@ export default function App() {
             path="/app/recipes"
             element={
               <ProtectedRoute>
-                <Recipes />
+                <PaidFeatureRoute>
+                  <Recipes />
+                </PaidFeatureRoute>
               </ProtectedRoute>
             }
           />

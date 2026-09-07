@@ -24,7 +24,7 @@ export function Terms() {
       <h2>1. The Service</h2>
       <p>
         Survival Day is an offline-first informational app covering topics such as a compass and star
-        navigation, water and terrain maps, weather forecasts, plant/wildlife/wood identification, first aid,
+        navigation, water and terrain maps, plant/wildlife/wood identification, first aid,
         shelter building, snares and traps, and wild-game recipes. Content is general-purpose and not tailored
         to your specific location, physical condition, medical history, or experience level.
       </p>
