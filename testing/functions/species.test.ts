@@ -2,6 +2,29 @@ import functionsTest from "firebase-functions-test";
 
 const testEnv = functionsTest();
 
+// ---- In-memory Firestore mock (users collection only, for requirePaidAccess
+// -- see functions/src/entitlement.ts) -- same shape as entitlement.test.ts. ----
+let store: Record<string, any> = {};
+
+const docMock = jest.fn((id: string) => ({
+  id,
+  get: jest.fn(async () => ({ exists: store[id] !== undefined, data: () => store[id] })),
+}));
+const collectionMock = jest.fn(() => ({ doc: docMock }));
+
+jest.mock("firebase-admin/firestore", () => ({
+  getFirestore: () => ({ collection: collectionMock }),
+}));
+
+const AUTH = { uid: "test-uid" };
+
+/** getSpeciesNearby now requires requirePaidAccess -- seed a profile that
+ * passes it by default so the existing tests below (about species-lookup
+ * behavior, not entitlement) don't each need to do this themselves. */
+function seedPaidProfile(uid = AUTH.uid) {
+  store[uid] = { tier: "premium" };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { SPECIES_DATA } = require("../../functions/src/speciesData");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -90,6 +113,11 @@ describe("hasNearbyOccurrence", () => {
 
 describe("getSpeciesNearby", () => {
   const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    store = {};
+    seedPaidProfile();
+  });
   afterEach(() => {
     global.fetch = originalFetch;
     jest.restoreAllMocks();
@@ -110,6 +138,21 @@ describe("getSpeciesNearby", () => {
     ).rejects.toThrow(/month must be between/);
   });
 
+  it("rejects an unauthenticated call", async () => {
+    const wrapped = testEnv.wrap(getSpeciesNearby);
+    await expect(
+      wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 } }),
+    ).rejects.toThrow(/Sign in/);
+  });
+
+  it("rejects a free-tier (trial-expired) account with permission-denied, proving the server enforces this directly", async () => {
+    store["locked-uid"] = { tier: "free" };
+    const wrapped = testEnv.wrap(getSpeciesNearby);
+    await expect(
+      wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 }, auth: { uid: "locked-uid" } }),
+    ).rejects.toMatchObject({ code: "permission-denied" });
+  });
+
   it("only calls GBIF for in-season species, and labels the confirmed one", async () => {
     // Every species active in month 1 (January) — a small, deterministic set.
     const januaryEntries = SPECIES_DATA.filter((e: { activeMonths: number[] }) => e.activeMonths.includes(1));
@@ -124,7 +167,7 @@ describe("getSpeciesNearby", () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     const wrapped = testEnv.wrap(getSpeciesNearby);
-    const result = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 } });
+    const result = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 }, auth: AUTH });
 
     // Only species active in January are ever queried.
     expect(fetchMock).toHaveBeenCalledTimes(januaryEntries.length);
@@ -153,7 +196,7 @@ describe("getSpeciesNearby", () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     const wrapped = testEnv.wrap(getSpeciesNearby);
-    const result = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 } });
+    const result = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 }, auth: AUTH });
 
     // Nothing is dropped just because a sibling in the same category got confirmed.
     expect(result.species).toHaveLength(januaryEntries.length);
@@ -171,7 +214,7 @@ describe("getSpeciesNearby", () => {
     global.fetch = jest.fn().mockRejectedValue(new Error("network down")) as unknown as typeof fetch;
 
     const wrapped = testEnv.wrap(getSpeciesNearby);
-    const result = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 } });
+    const result = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 }, auth: AUTH });
 
     // GBIF being fully unreachable degrades to "show curated content,
     // honestly unconfirmed" rather than returning nothing.
