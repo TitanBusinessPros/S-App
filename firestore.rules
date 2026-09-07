@@ -45,6 +45,18 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Per-user water-scan credit bookkeeping (see
+    // functions/src/waterScanCredits.ts). Users may read their own credit
+    // doc so the UI can show "X scans left today" without spending one just
+    // to find out, but never write it directly -- only the Admin SDK
+    // increments/resets it, so a client can never grant itself unlimited
+    // scans. A missing doc means the user hasn't used a scan in the current
+    // window yet (full credits) -- the client treats absence that way.
+    match /waterScanCredits/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+    }
+
     // Per-user areas explicitly saved for offline use. Each doc is a
     // self-contained, denormalized copy of a water-area result (not just a
     // pointer) so it renders fully offline. Users may only touch their own

@@ -7,6 +7,7 @@ import { useAuth } from '../lib/AuthContext'
 import { useGeolocation } from '../lib/useGeolocation'
 import { useOnlineStatus } from '../lib/useOnlineStatus'
 import { fetchWaterFeatures } from '../lib/functionsApi'
+import { useWaterScanCredits, DAILY_WATER_SCAN_LIMIT } from '../lib/waterScanCredits'
 import {
   DEFAULT_RADIUS_MILES,
   MIN_RADIUS_MILES,
@@ -94,6 +95,7 @@ function formatDate(epochMs: number): string {
 
 type ResultMeta = Pick<
   GetWaterFeaturesResult,
+  | 'radiusMiles'
   | 'count'
   | 'totalFound'
   | 'searchedRadiusMiles'
@@ -105,7 +107,9 @@ type ResultMeta = Pick<
   | 'fromCache'
 >
 
-/** Which state banner the page is currently showing. */
+/** Which state banner the page is currently showing. `null` means "no scan
+ * has been run yet this visit" — every water lookup, including the first,
+ * now requires pressing "Scan for Water" (see handleScanForWater). */
 type ViewState = 'live' | 'cache' | 'offline-saved' | 'offline-stale' | 'offline-empty' | null
 
 export function MapWater() {
@@ -114,6 +118,7 @@ export function MapWater() {
   const online = useOnlineStatus()
   const { coords, loading: locating, error: locationError, locate } = useGeolocation()
   const { areas: savedAreas, loading: savedAreasLoading } = useSavedWaterAreas(uid)
+  const { creditsRemaining, resetAt: creditsResetAt } = useWaterScanCredits(uid)
 
   const [radiusMiles, setRadiusMiles] = useState(DEFAULT_RADIUS_MILES)
   const [features, setFeatures] = useState<WaterFeature[]>([])
@@ -151,34 +156,40 @@ export function MapWater() {
     if (coords) setCameraCenter({ lat: coords.lat, lng: coords.lng })
   }, [coords])
 
-  // Online fetch — never runs while offline or while viewing a pinned saved area.
-  useEffect(() => {
+  // Online water lookups are manual and credit-gated (see "Scan for Water"
+  // below) — nothing here auto-fetches on mount, or when location/radius
+  // changes, the way it used to. Each press costs 1 of DAILY_WATER_SCAN_LIMIT
+  // credits per rolling 24h window; the server (functions/src/water.ts,
+  // functions/src/waterScanCredits.ts) is the real enforcement point, this
+  // is just the UI trigger.
+  async function handleScanForWater() {
     if (!coords || !online || viewingSavedArea) return
 
-    let cancelled = false
     setFetching(true)
     setFetchError(null)
 
-    fetchWaterFeatures(coords.lat, coords.lng, radiusMiles)
-      .then((result) => {
-        if (cancelled) return
-        setFeatures(result.features)
-        setResultMeta(result)
-        setViewState(result.fromCache ? 'cache' : 'live')
-        setSaveStatus('idle')
-      })
-      .catch(() => {
-        if (cancelled) return
+    try {
+      const result = await fetchWaterFeatures(coords.lat, coords.lng, radiusMiles)
+      setFeatures(result.features)
+      setResultMeta(result)
+      setViewState(result.fromCache ? 'cache' : 'live')
+      setSaveStatus('idle')
+    } catch (err) {
+      const code = (err as { code?: string } | undefined)?.code
+      if (code === 'functions/resource-exhausted') {
+        const resetAt = (err as { details?: { resetAt?: number } }).details?.resetAt
+        setFetchError(
+          resetAt
+            ? `You're out of water scans for today. More free up ${formatDate(resetAt)}.`
+            : "You're out of water scans for today. Try again later.",
+        )
+      } else {
         setFetchError('Could not load water data. Try again in a moment.')
-      })
-      .finally(() => {
-        if (!cancelled) setFetching(false)
-      })
-
-    return () => {
-      cancelled = true
+      }
+    } finally {
+      setFetching(false)
     }
-  }, [coords, radiusMiles, online, viewingSavedArea])
+  }
 
   // Offline rendering — shows a matching saved area for the current
   // location/radius, or the honest "nothing saved here" empty state.
@@ -190,6 +201,7 @@ export function MapWater() {
     if (match) {
       setFeatures(match.features)
       setResultMeta({
+        radiusMiles: match.radiusMiles,
         count: match.count,
         totalFound: match.totalFound,
         searchedRadiusMiles: match.searchedRadiusMiles,
@@ -213,6 +225,7 @@ export function MapWater() {
     if (!viewingSavedArea) return
     setFeatures(viewingSavedArea.features)
     setResultMeta({
+      radiusMiles: viewingSavedArea.radiusMiles,
       count: viewingSavedArea.count,
       totalFound: viewingSavedArea.totalFound,
       searchedRadiusMiles: viewingSavedArea.searchedRadiusMiles,
@@ -322,6 +335,18 @@ export function MapWater() {
         <button type="button" className="btn" onClick={locate} disabled={locating}>
           {locating ? 'Locating…' : coords ? 'Re-center on me' : 'Use my location'}
         </button>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={handleScanForWater}
+          disabled={!coords || !online || !!viewingSavedArea || fetching || creditsRemaining <= 0}
+        >
+          {fetching
+            ? 'Scanning…'
+            : creditsRemaining <= 0
+              ? 'No scans left today'
+              : `💧 Scan for Water (${creditsRemaining} left)`}
+        </button>
 
         {online && !viewingSavedArea && !fetching && !fetchError && resultMeta && (
           <button
@@ -351,6 +376,24 @@ export function MapWater() {
           📍 Showing saved water data — "Re-center on me" moves the map to your live position without losing it.
         </p>
       )}
+      {online && !viewingSavedArea && creditsRemaining <= 0 && (
+        <p className="map-disclosure">
+          ⏳ No water scans left today.{creditsResetAt ? ` More free up ${formatDate(creditsResetAt)}.` : ''}
+        </p>
+      )}
+      {online && !viewingSavedArea && !fetching && viewState === null && creditsRemaining > 0 && (
+        <div className="card status-banner status-idle">
+          <span>💧 Ready to search</span>
+          <span className="status-banner-meta">
+            Press "Scan for Water" to search a {radiusMiles} mi radius — uses 1 of your {DAILY_WATER_SCAN_LIMIT}{' '}
+            daily scans.
+          </span>
+        </div>
+      )}
+      {online && !viewingSavedArea && (viewState === 'live' || viewState === 'cache') && resultMeta &&
+        resultMeta.radiusMiles !== radiusMiles && (
+          <p className="map-disclosure">↻ Radius changed — press "Scan for Water" again to update these results.</p>
+        )}
 
       {viewState && resultMeta && (
         <div className={`card status-banner status-${viewState}`}>
@@ -447,7 +490,9 @@ export function MapWater() {
           <h2>
             {fetching
               ? 'Searching…'
-              : `${features.length} water source${features.length === 1 ? '' : 's'} found`}
+              : viewState === null
+                ? 'Not scanned yet'
+                : `${features.length} water source${features.length === 1 ? '' : 's'} found`}
           </h2>
 
           {fetchError && <p className="login-error">{fetchError}</p>}
@@ -465,7 +510,7 @@ export function MapWater() {
             </button>
           )}
 
-          {!fetching && !fetchError && features.length === 0 && viewState !== 'offline-empty' && (
+          {!fetching && !fetchError && features.length === 0 && viewState !== null && viewState !== 'offline-empty' && (
             <p className="feature-list-empty">No water sources found in this radius. Try widening it.</p>
           )}
 

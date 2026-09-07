@@ -47,7 +47,8 @@
 }
 
 .status-offline-empty,
-.status-offline-stale {
+.status-offline-stale,
+.status-idle {
   border-color: var(--accent);
 }
 

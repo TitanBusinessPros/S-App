@@ -46,6 +46,8 @@ export interface GetWaterFeaturesResult {
   sourceRefreshDate: string | null
   fetchedAt: number
   fromCache: boolean
+  /** Water-scan credits left today after this call — see useWaterScanCredits. */
+  creditsRemaining: number
 }
 
 const WATER_TYPE_LABELS: Record<WaterType, string> = {

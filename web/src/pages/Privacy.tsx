@@ -47,7 +47,9 @@ export function Privacy() {
       <h3>Account/subscription metadata</h3>
       <p>
         We store, in your own account record: your subscription tier (trial, free, premium, or gold), your
-        trial start/end dates, and your account creation date.
+        trial start/end dates, and your account creation date. We also track how many Water & Terrain Map
+        scans you've used in the current 24-hour period, so the "Scan for Water" button can enforce its daily
+        limit.
       </p>
 
       <h2>2. What We Don't Collect</h2>

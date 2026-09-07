@@ -1,6 +1,7 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { getFirestore } from "firebase-admin/firestore";
+import { consumeWaterScanCredit } from "./waterScanCredits";
 
 export const MIN_RADIUS_MILES = 1;
 export const MAX_RADIUS_MILES = 100;
@@ -47,6 +48,8 @@ export interface GetWaterFeaturesResult {
   sourceRefreshDate: string | null;
   fetchedAt: number;
   fromCache: boolean;
+  /** Water-scan credits left today after this call — see waterScanCredits.ts. */
+  creditsRemaining: number;
 }
 
 export function milesToMeters(miles: number): number {
@@ -346,7 +349,7 @@ interface CacheDoc {
   fetchLockedAt: number | null;
 }
 
-function toResult(doc: CacheDoc, fromCache: boolean): GetWaterFeaturesResult {
+function toResult(doc: CacheDoc, fromCache: boolean, creditsRemaining: number): GetWaterFeaturesResult {
   return {
     features: doc.features,
     radiusMiles: doc.radiusMiles,
@@ -359,6 +362,7 @@ function toResult(doc: CacheDoc, fromCache: boolean): GetWaterFeaturesResult {
     sourceRefreshDate: doc.sourceRefreshDate,
     fetchedAt: doc.fetchedAt,
     fromCache,
+    creditsRemaining,
   };
 }
 
@@ -378,6 +382,11 @@ function toResult(doc: CacheDoc, fromCache: boolean): GetWaterFeaturesResult {
  * nearest 100 — the ones actually useful for a person standing at that
  * point — fixes both, and an expanding-radius search (fetchNearestFeatures)
  * means we still don't have to fetch more than we need to find them.
+ *
+ * Rate-limited to DAILY_WATER_SCAN_LIMIT calls per signed-in user per
+ * rolling 24h window (see waterScanCredits.ts) — every call costs a credit,
+ * cache hit or not, since the limit is about how often the "Scan for Water"
+ * button gets pressed, not about USGS load specifically.
  */
 export const getWaterFeatures = onCall({ invoker: "public", timeoutSeconds: 120 }, async (request) => {
   const { lat, lng, radiusMiles } = (request.data ?? {}) as {
@@ -392,6 +401,12 @@ export const getWaterFeatures = onCall({ invoker: "public", timeoutSeconds: 120 
   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
     throw new HttpsError("invalid-argument", "lat/lng out of range.");
   }
+
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Sign in to search for water.");
+  }
+  const { creditsRemaining } = await consumeWaterScanCredit(uid);
 
   const clampedRadius = clampRadiusMiles(radiusMiles);
   const roundedLat = Number(lat.toFixed(2));
@@ -412,7 +427,7 @@ export const getWaterFeatures = onCall({ invoker: "public", timeoutSeconds: 120 
     // and could still hold thousands of features) — treat it as a miss.
     if (data.expiresAt > now && data.schemaVersion === SCHEMA_VERSION) {
       logger.info("getWaterFeatures: cache hit", { cacheKey, count: data.count });
-      return toResult(data, true);
+      return toResult(data, true, creditsRemaining);
     }
   }
 
@@ -483,5 +498,5 @@ export const getWaterFeatures = onCall({ invoker: "public", timeoutSeconds: 120 
     searchedRadiusMiles: doc.searchedRadiusMiles,
   });
 
-  return toResult(doc, false);
+  return toResult(doc, false, creditsRemaining);
 });
