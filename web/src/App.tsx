@@ -12,6 +12,7 @@ import { Terms } from './pages/Terms'
 import { Privacy } from './pages/Privacy'
 import { Dashboard } from './pages/Dashboard'
 import { Compass } from './pages/Compass'
+import { MoonPhase } from './pages/MoonPhase'
 import { FirstAid } from './pages/FirstAid'
 import { Shelter } from './pages/Shelter'
 import { FindingWater } from './pages/FindingWater'
@@ -61,6 +62,16 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Compass />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/moon-phase"
+            element={
+              <ProtectedRoute>
+                <PaidFeatureRoute>
+                  <MoonPhase />
+                </PaidFeatureRoute>
               </ProtectedRoute>
             }
           />

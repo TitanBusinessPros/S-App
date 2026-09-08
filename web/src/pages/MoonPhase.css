@@ -1,0 +1,54 @@
+.moon-phase-card {
+  text-align: center;
+  max-width: 420px;
+  margin: 0 auto 1.5rem;
+}
+
+.moon-phase-icon {
+  font-size: 4.5rem;
+  line-height: 1;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.moon-phase-illumination {
+  color: var(--text-dim);
+  margin-bottom: 1.25rem;
+}
+
+.moon-phase-dates {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.moon-phase-dates > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.moon-phase-dates-label {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.moon-phase-why {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.moon-phase-why ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.moon-phase-why li {
+  margin-bottom: 0.5rem;
+  color: var(--text-dim);
+}
