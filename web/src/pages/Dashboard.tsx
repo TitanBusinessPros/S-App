@@ -8,6 +8,10 @@ interface Feature {
   title: string
   description: string
   to?: string
+  /** Shows the card now (per the user's standing policy: a new feature's
+   * card appears as soon as work starts, not just when it ships) but keeps
+   * it non-clickable and visibly marked, instead of hiding it entirely. */
+  comingSoon?: boolean
 }
 
 const FEATURES: Feature[] = [
@@ -17,6 +21,7 @@ const FEATURES: Feature[] = [
   { icon: '⛰️', title: 'Topography Map', description: 'A topo map centered on you, plus a full guide to reading contour lines.', to: '/app/topography' },
   { icon: '🏔️', title: '3D Maps', description: 'A tilted, rotatable 3D view of your area.', to: '/app/map3d' },
   { icon: '🌔', title: 'Moon Phase', description: "Tonight's moonlight, and when to expect the next full and new moons.", to: '/app/moon-phase' },
+  { icon: '🎣', title: 'Solunar Calculator', description: "Today's predicted best times for fish and wildlife activity.", to: '/app/solunar' },
   { icon: '🆘', title: 'SOS Beacon', description: 'Flash and sound a Morse code SOS distress signal.', to: '/app/sos-beacon' },
   { icon: '🌿', title: 'Plants, Wildlife & Wood', description: 'Edible & dangerous species, and wood for fire — confirmed nearby, in season.', to: '/app/species' },
   { icon: '🩹', title: 'First Aid', description: 'Core wilderness first aid steps.', to: '/app/first-aid' },
@@ -54,6 +59,19 @@ export function Dashboard() {
               <h3>{feature.title}</h3>
             </>
           )
+
+          if (feature.comingSoon) {
+            return (
+              <div
+                key={feature.title}
+                className="card feature-card feature-card-disabled"
+                title={`${feature.description} — coming soon`}
+              >
+                <span className="badge feature-card-coming-soon-badge">Coming Soon</span>
+                {content}
+              </div>
+            )
+          }
 
           if (!feature.to) {
             return (

@@ -14,6 +14,7 @@ import { Dashboard } from './pages/Dashboard'
 import { Compass } from './pages/Compass'
 import { MoonPhase } from './pages/MoonPhase'
 import { SosBeacon } from './pages/SosBeacon'
+import { SolunarCalculator } from './pages/SolunarCalculator'
 import { FirstAid } from './pages/FirstAid'
 import { Shelter } from './pages/Shelter'
 import { FindingWater } from './pages/FindingWater'
@@ -76,6 +77,16 @@ export default function App() {
               <ProtectedRoute>
                 <PaidFeatureRoute>
                   <MoonPhase />
+                </PaidFeatureRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/solunar"
+            element={
+              <ProtectedRoute>
+                <PaidFeatureRoute>
+                  <SolunarCalculator />
                 </PaidFeatureRoute>
               </ProtectedRoute>
             }
