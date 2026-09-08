@@ -1,9 +1,25 @@
+import { execSync } from 'node:child_process'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// A visible, unmissable build stamp (Footer.tsx) -- so "did my deploy
+// actually reach your device" stops being something only server-side curl
+// checks can answer. Falls back to a build timestamp if git isn't
+// available (e.g. a source-only deploy environment).
+function getBuildId(): string {
+  try {
+    return execSync('git rev-parse --short HEAD', { cwd: import.meta.dirname }).toString().trim()
+  } catch {
+    return new Date().toISOString()
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    __BUILD_ID__: JSON.stringify(getBuildId()),
+  },
   test: {
     environment: 'jsdom',
     globals: false,
