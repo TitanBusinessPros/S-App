@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Map as MaplibreMap, NavigationControl, setWorkerUrl } from 'maplibre-gl'
+import { Map as MaplibreMap, Marker, NavigationControl, setWorkerUrl } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { Shell } from '../components/Shell'
@@ -48,6 +48,7 @@ const FALLBACK_CENTER: [number, number] = [-98.35, 39.5]
 export function Map3D() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<MaplibreMap | null>(null)
+  const markerRef = useRef<Marker | null>(null)
   const { coords, loading: locating, error: locationError, locate } = useGeolocation()
   const [mapReady, setMapReady] = useState(false)
   const [mapError, setMapError] = useState<string | null>(null)
@@ -138,6 +139,8 @@ export function Map3D() {
 
     return () => {
       clearTimeout(loadTimeout)
+      markerRef.current?.remove()
+      markerRef.current = null
       map.remove()
       mapRef.current = null
     }
@@ -146,6 +149,10 @@ export function Map3D() {
 
   // Fly to the user's real position once it's known, tilted into the 3D
   // view -- covers both the initial locate() and pressing "Re-center on me".
+  // Drops (or moves) a "you are here" pin at the same spot, reusing the
+  // same pulsing marker style as the Water & Terrain Map's Leaflet marker
+  // (.me-divicon / .me-divicon-pulse, from MapWater.css) so the two map
+  // pages look consistent despite one being Leaflet and one plain MapLibre.
   useEffect(() => {
     if (!coords || !mapRef.current) return
     mapRef.current.flyTo({
@@ -155,6 +162,17 @@ export function Map3D() {
       bearing: DEFAULT_BEARING,
       essential: true,
     })
+
+    if (markerRef.current) {
+      markerRef.current.setLngLat([coords.lng, coords.lat])
+    } else {
+      const el = document.createElement('div')
+      el.className = 'me-divicon'
+      el.innerHTML = '<span class="me-divicon-pulse"></span>📍'
+      markerRef.current = new Marker({ element: el, anchor: 'bottom' })
+        .setLngLat([coords.lng, coords.lat])
+        .addTo(mapRef.current)
+    }
   }, [coords])
 
   return (
