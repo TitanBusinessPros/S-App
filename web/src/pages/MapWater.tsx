@@ -73,7 +73,22 @@ function OpenFreeMapLayer() {
   useEffect(() => {
     const gl = maplibreGL({ style: OPENFREEMAP_STYLE_URL }).addTo(map)
     map.attributionControl.addAttribution(OPENFREEMAP_ATTRIBUTION)
+
+    // This layer sizes its canvas to the Leaflet map's dimensions once, at
+    // the instant it's added. If that happens before the card's own layout
+    // has fully settled (a very likely race right after the "street"/"topo"
+    // toggle swaps this layer in), it locks in a stale or zero size and the
+    // canvas never repaints on its own -- it just stays blank, with no
+    // error, even though every tile request behind it succeeds. Forcing an
+    // explicit resize on the next frame, once layout is guaranteed settled,
+    // makes it pick up the real size and paint.
+    const raf = requestAnimationFrame(() => {
+      map.invalidateSize()
+      gl.getMaplibreMap().resize()
+    })
+
     return () => {
+      cancelAnimationFrame(raf)
       map.attributionControl.removeAttribution(OPENFREEMAP_ATTRIBUTION)
       gl.remove()
     }
