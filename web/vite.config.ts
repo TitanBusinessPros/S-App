@@ -48,7 +48,7 @@ export default defineConfig({
       manifest: {
         name: 'Survival Day',
         short_name: 'Survival Day',
-        description: 'Offline-first wilderness survival guide',
+        description: 'Wilderness survival guide',
         theme_color: '#1b1b1b',
         background_color: '#1b1b1b',
         display: 'standalone',

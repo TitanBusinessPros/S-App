@@ -1,6 +1,6 @@
 # Survival Day
 
-An offline-first wilderness survival guide app.
+A wilderness survival guide app. Note: signing in (Google Sign-In) requires an internet connection — it is not offline-first, though a number of individual features work without a live connection once you're signed in and have opened the app at least once. See "On credentials" and each feature's own notes below for what actually needs a connection and what doesn't.
 
 ## Session Status (as of 2026-09-07 CDT)
 
@@ -64,7 +64,7 @@ This file will never contain actual tokens, API keys, or passwords, even in a pr
 
 This is an npm workspaces monorepo — one `npm install` at the root installs everything into a single deduped `node_modules` tree (this matters: `functions/` and `web/` used to get their own separate copies of shared packages, which silently broke Jest mocks in tests since the mock and the real code were different physical module instances).
 
-- `web/` — React + TypeScript PWA (Vite), installable and fully usable offline via service worker precaching.
+- `web/` — React + TypeScript PWA (Vite), installable, with service worker precaching so most already-visited screens keep working without a live connection — signing in itself still requires one (Google Sign-In).
 - `functions/` — Firebase Cloud Functions (TypeScript).
 - `testing/functions/` — Tests for every Cloud Function, plus `check-coverage.js`, which CI runs on every PR to fail the build if any deployed function lacks a matching test.
 - `firebase.json`, `.firebaserc`, `firestore.rules`, `storage.rules` — Firebase project config (project: `survival-day-app`).

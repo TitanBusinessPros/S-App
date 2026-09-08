@@ -30,7 +30,7 @@ export function Login() {
         <div className="login-mark">🧭</div>
         <h1 className="login-title">Survival Day</h1>
         <p className="login-tagline">
-          Your offline-first guide to water, food, weather, and shelter — wherever you are.
+          Your guide to water, food, and shelter — wherever you are.
         </p>
 
         <button
