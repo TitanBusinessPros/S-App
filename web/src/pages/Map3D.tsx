@@ -1,10 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
-import { Map as MaplibreMap, NavigationControl } from 'maplibre-gl'
+import { Map as MaplibreMap, NavigationControl, setWorkerUrl } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { Shell } from '../components/Shell'
 import { useGeolocation } from '../lib/useGeolocation'
 import './MapWater.css' // shared .map-header / .map-disclosure styles
 import './Map3D.css'
+
+// This is what was actually broken -- confirmed against MapLibre's own
+// bundler docs after every other explanation (network, WebGL, Workers) had
+// already checked out fine on the user's own device. For bundlers like
+// Vite, MapLibre GL can't reliably locate its own background worker script
+// via import.meta.url, so it needs this one-time explicit pointer. Without
+// it, the worker silently fails on its first import -- the main thread's
+// own fetches (style JSON, the network-check above) succeed normally, no
+// 'error' event fires, but no vector tile ever finishes parsing, so 'load'
+// never fires either. Must be ?worker&url specifically, not plain ?url --
+// the worker file imports a sibling chunk that only ?worker&url bundles
+// alongside it.
+setWorkerUrl(maplibreWorkerUrl)
 
 // Same OpenFreeMap style + tile service the "street" basemap used, but this
 // page talks to it via plain MapLibre GL directly instead of the MapLibre
