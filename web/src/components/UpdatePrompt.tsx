@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
+import { useAuth } from '../lib/AuthContext'
 import './UpdatePrompt.css'
 
 /**
@@ -10,10 +12,30 @@ import './UpdatePrompt.css'
  * the new version without fully closing and relaunching the app.
  */
 export function UpdatePrompt() {
+  const { user } = useAuth()
+  const registrationRef = useRef<ServiceWorkerRegistration | null>(null)
+  const wasLoggedIn = useRef(false)
+
   const {
     needRefresh: [needRefresh],
     updateServiceWorker,
-  } = useRegisterSW()
+  } = useRegisterSW({
+    onRegisteredSW(_url, registration) {
+      registrationRef.current = registration ?? null
+    },
+  })
+
+  // Force a fresh check right when someone logs in -- that's the moment
+  // they're actually looking at the app and most likely to notice this
+  // banner, rather than relying on the browser's own background check
+  // interval, which can be long enough that someone opens the app, uses
+  // it, and leaves again before a check ever runs.
+  useEffect(() => {
+    if (user && !wasLoggedIn.current) {
+      registrationRef.current?.update()
+    }
+    wasLoggedIn.current = !!user
+  }, [user])
 
   if (!needRefresh) return null
 
