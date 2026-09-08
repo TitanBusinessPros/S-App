@@ -27,6 +27,9 @@ import { Recipes } from './pages/Recipes'
 // the app's precached bundle over the PWA's 2 MiB service-worker limit --
 // the split is still a reasonable win on its own, independent of that.
 const MapWater = lazy(() => import('./pages/MapWater').then((m) => ({ default: m.MapWater })))
+// Same reasoning: Map3D pulls in plain MapLibre GL (~1 MB), only needed by
+// someone who actually opens this page.
+const Map3D = lazy(() => import('./pages/Map3D').then((m) => ({ default: m.Map3D })))
 
 function MapWaterFallback() {
   return (
@@ -67,6 +70,18 @@ export default function App() {
                 <PaidFeatureRoute>
                   <Suspense fallback={<MapWaterFallback />}>
                     <MapWater />
+                  </Suspense>
+                </PaidFeatureRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/map3d"
+            element={
+              <ProtectedRoute>
+                <PaidFeatureRoute>
+                  <Suspense fallback={<MapWaterFallback />}>
+                    <Map3D />
                   </Suspense>
                 </PaidFeatureRoute>
               </ProtectedRoute>

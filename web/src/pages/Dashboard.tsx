@@ -14,6 +14,7 @@ const FEATURES: Feature[] = [
   { icon: '🧭', title: 'Compass', description: 'Magnetic heading + find true north using the stars.', to: '/app/compass' },
   { icon: '📍', title: 'Waypoints & Trail', description: 'Drop a pin at camp, then find your way back.', to: '/app/waypoints' },
   { icon: '🗺️', title: 'Water & Terrain Map', description: 'Ponds, creeks, rivers, and lakes within an adjustable radius.', to: '/app/map' },
+  { icon: '🏔️', title: '3D Maps', description: 'A tilted, rotatable 3D view of your area.', to: '/app/map3d' },
   { icon: '🌿', title: 'Plants, Wildlife & Wood', description: 'Edible & dangerous species, and wood for fire — confirmed nearby, in season.', to: '/app/species' },
   { icon: '🩹', title: 'First Aid', description: 'Core wilderness first aid steps.', to: '/app/first-aid' },
   { icon: '⛺', title: 'Shelter Building', description: 'Shelter designs suited to your climate and materials.', to: '/app/shelter' },

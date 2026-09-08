@@ -87,6 +87,12 @@ export function Privacy() {
           (place-name lookups) — water-feature, species-occurrence, and location-label data, fetched by our own
           Cloud Functions on your behalf (none of these receive your location or IP directly from your device).
         </li>
+        <li>
+          <strong>OpenFreeMap</strong> — map tiles for the 3D Maps feature. Unlike the sources above, your device
+          loads map imagery directly from OpenFreeMap as you look around, so it receives standard web request
+          data (such as your IP address) the same way any map provider would; OpenFreeMap's own privacy policy
+          states it does not log IP addresses except temporarily during a security incident.
+        </li>
       </ul>
 
       <h2>6. Data Retention</h2>
