@@ -37,10 +37,46 @@ export function Map3D() {
   const { coords, loading: locating, error: locationError, locate } = useGeolocation()
   const [mapReady, setMapReady] = useState(false)
   const [mapError, setMapError] = useState<string | null>(null)
+  const [networkCheck, setNetworkCheck] = useState('Checking network access to OpenFreeMap…')
+
+  // MapLibre GL requires both of these to actually render anything -- if
+  // either is missing/blocked, tile parsing can hang with no thrown error
+  // and no 'error' event at all, which matches exactly what got reported.
+  const [envCheck] = useState(() => {
+    const hasWorker = typeof Worker !== 'undefined'
+    let hasWebGL = false
+    try {
+      const canvas = document.createElement('canvas')
+      hasWebGL = !!(canvas.getContext('webgl2') || canvas.getContext('webgl'))
+    } catch {
+      hasWebGL = false
+    }
+    return `Environment check: WebGL ${hasWebGL ? 'OK' : 'MISSING'}, Web Workers ${hasWorker ? 'OK' : 'MISSING'}.`
+  })
 
   useEffect(() => {
     locate()
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Independent of MapLibre's own internals entirely -- a plain fetch to
+  // the exact same URL, from the exact same browser/network, so a report
+  // of "still loading, no error" can be split into two possibilities:
+  // either this browser/network can't reach OpenFreeMap at all (this check
+  // fails too), or it can, and the problem is specific to MapLibre's own
+  // tile/worker pipeline (this check succeeds while the map still hangs).
+  useEffect(() => {
+    const start = performance.now()
+    fetch(STYLE_URL, { mode: 'cors', cache: 'no-store' })
+      .then((res) => {
+        const ms = Math.round(performance.now() - start)
+        setNetworkCheck(`Network check: reached OpenFreeMap OK (HTTP ${res.status}, ${ms}ms).`)
+      })
+      .catch((err) => {
+        const ms = Math.round(performance.now() - start)
+        const msg = err instanceof Error ? err.message : String(err)
+        setNetworkCheck(`Network check: FAILED to reach OpenFreeMap after ${ms}ms — ${msg}`)
+      })
   }, [])
 
   // Created once, recentered imperatively when a location arrives -- same
@@ -125,6 +161,8 @@ export function Map3D() {
             {mapError ? (
               <>
                 <p className="login-error">Map failed to load: {mapError}</p>
+                <p className="mono" style={{ fontSize: '0.75rem' }}>{networkCheck}</p>
+                <p className="mono" style={{ fontSize: '0.75rem' }}>{envCheck}</p>
                 <p className="mono" style={{ fontSize: '0.75rem' }}>
                   Please screenshot this message if reporting the problem.
                 </p>
@@ -137,7 +175,10 @@ export function Map3D() {
                 </button>
               </>
             ) : (
-              <p className="mono">{locating ? 'Locating…' : 'Loading map…'}</p>
+              <>
+                <p className="mono">{locating ? 'Locating…' : 'Loading map…'}</p>
+                <p className="mono" style={{ fontSize: '0.75rem' }}>{networkCheck}</p>
+              </>
             )}
           </div>
         )}
