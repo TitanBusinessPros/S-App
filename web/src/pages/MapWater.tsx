@@ -28,6 +28,7 @@ import {
   useSavedWaterAreas,
   type SavedWaterArea,
 } from '../lib/savedWaterAreas'
+import '../components/PageHeader.css'
 import './MapWater.css'
 
 const MILES_TO_METERS = 1609.344

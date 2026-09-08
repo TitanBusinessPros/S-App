@@ -4,7 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { Shell } from '../components/Shell'
 import { useGeolocation } from '../lib/useGeolocation'
-import './MapWater.css' // shared .map-header / .map-disclosure styles
+import '../components/PageHeader.css'
 import './Map3D.css'
 
 // This is what was actually broken -- confirmed against MapLibre's own
