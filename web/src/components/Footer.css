@@ -19,3 +19,9 @@
   color: var(--accent);
   text-decoration: underline;
 }
+
+.app-footer-build {
+  margin-top: 0.5rem !important;
+  font-size: 0.7rem !important;
+  opacity: 0.6;
+}

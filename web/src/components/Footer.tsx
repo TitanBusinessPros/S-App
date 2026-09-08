@@ -21,6 +21,7 @@ export function Footer() {
         <Link to="/privacy">Privacy Policy</Link>
       </p>
       <p>© 2026 Titan Business Pros LLC. All rights reserved.</p>
+      <p className="app-footer-build mono">Version {__BUILD_ID__}</p>
     </footer>
   )
 }
