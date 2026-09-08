@@ -4,6 +4,7 @@ import { AuthProvider } from './lib/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { PaidFeatureRoute } from './components/PaidFeatureRoute'
 import { AdminRoute } from './components/AdminRoute'
+import { UpdatePrompt } from './components/UpdatePrompt'
 import { Login } from './pages/Login'
 import { Upgrade } from './pages/Upgrade'
 import { Admin } from './pages/Admin'
@@ -195,6 +196,7 @@ export default function App() {
           />
         </Routes>
       </AuthProvider>
+      <UpdatePrompt />
     </BrowserRouter>
   )
 }
