@@ -45,6 +45,7 @@
 }
 
 .feature-card-disabled {
+  position: relative;
   opacity: 0.55;
   cursor: default;
 }
@@ -66,6 +67,16 @@
   right: 0.5rem;
   font-size: 0.65rem;
   padding: 0.15rem 0.4rem;
+}
+
+.feature-card-coming-soon-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 0.65rem;
+  padding: 0.15rem 0.4rem;
+  background: var(--bg-elevated);
+  color: var(--text-faint);
 }
 
 .feature-icon {
