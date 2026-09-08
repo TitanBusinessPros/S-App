@@ -21,11 +21,11 @@ import { Waypoints } from './pages/Waypoints'
 import { SpeciesNearby } from './pages/SpeciesNearby'
 import { Recipes } from './pages/Recipes'
 
-// Lazy-loaded on its own: MapWater pulls in Leaflet + MapLibre GL (for the
-// OpenFreeMap basemap), which pushed the app's precached bundle over the
-// PWA's 2 MiB service-worker limit when it lived in the main chunk. Split
-// into its own chunk so that weight only downloads (and gets precached) for
-// someone who actually opens the Water & Terrain Map, not every install.
+// Lazy-loaded on its own: MapWater pulls in Leaflet, which is heavy enough
+// to keep out of the initial page load's critical path. Kept split into
+// its own chunk after a since-removed MapLibre GL dependency briefly pushed
+// the app's precached bundle over the PWA's 2 MiB service-worker limit --
+// the split is still a reasonable win on its own, independent of that.
 const MapWater = lazy(() => import('./pages/MapWater').then((m) => ({ default: m.MapWater })))
 
 function MapWaterFallback() {

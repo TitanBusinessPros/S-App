@@ -83,15 +83,9 @@ export function Privacy() {
         <li><strong>Google</strong> — sign-in and the Firebase infrastructure the app runs on.</li>
         <li><strong>Stripe</strong> — payment processing for subscriptions.</li>
         <li>
-          <strong>USGS (National Map)</strong> and <strong>GBIF</strong> — water-feature and species-occurrence
-          data, fetched by our own Cloud Functions on your behalf (these two do not receive your location or IP
-          directly from your device).
-        </li>
-        <li>
-          <strong>OpenFreeMap</strong> — map tiles for the Water &amp; Terrain Map. Unlike the sources above,
-          your device loads map imagery directly from OpenFreeMap as you pan and zoom, so it receives standard
-          web request data (such as your IP address) the same way any map provider would; OpenFreeMap's own
-          privacy policy states it does not log IP addresses except temporarily during a security incident.
+          <strong>USGS (National Map)</strong>, <strong>GBIF</strong>, and the <strong>U.S. Census Bureau</strong>
+          (place-name lookups) — water-feature, species-occurrence, and location-label data, fetched by our own
+          Cloud Functions on your behalf (none of these receive your location or IP directly from your device).
         </li>
       </ul>
 
