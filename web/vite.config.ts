@@ -16,7 +16,14 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt' (not 'autoUpdate'): a new build downloads and waits rather
+      // than silently taking over. injectRegister: false because
+      // UpdatePrompt.tsx registers the service worker itself via
+      // virtual:pwa-register/react, so it can show the "update available"
+      // banner and let the user actually trigger the refresh -- there was
+      // previously no way to do that at all short of reinstalling the app.
+      registerType: 'prompt',
+      injectRegister: false,
       // Precache the app shell + all built assets so the app opens with
       // zero network requests once it's been visited once.
       workbox: {
