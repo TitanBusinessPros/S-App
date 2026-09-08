@@ -195,8 +195,8 @@ export default function App() {
             }
           />
         </Routes>
+        <UpdatePrompt />
       </AuthProvider>
-      <UpdatePrompt />
     </BrowserRouter>
   )
 }
