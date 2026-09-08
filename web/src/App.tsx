@@ -13,6 +13,7 @@ import { Privacy } from './pages/Privacy'
 import { Dashboard } from './pages/Dashboard'
 import { Compass } from './pages/Compass'
 import { MoonPhase } from './pages/MoonPhase'
+import { SosBeacon } from './pages/SosBeacon'
 import { FirstAid } from './pages/FirstAid'
 import { Shelter } from './pages/Shelter'
 import { FindingWater } from './pages/FindingWater'
@@ -71,6 +72,16 @@ export default function App() {
               <ProtectedRoute>
                 <PaidFeatureRoute>
                   <MoonPhase />
+                </PaidFeatureRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/sos-beacon"
+            element={
+              <ProtectedRoute>
+                <PaidFeatureRoute>
+                  <SosBeacon />
                 </PaidFeatureRoute>
               </ProtectedRoute>
             }
