@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
-import { MapContainer, TileLayer, Circle, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Circle, Marker, Popup } from 'react-leaflet'
 import { Shell } from '../components/Shell'
 import { useAuth } from '../lib/AuthContext'
 import { useGeolocation } from '../lib/useGeolocation'
 import { useOnlineStatus } from '../lib/useOnlineStatus'
 import { fetchWaterFeatures } from '../lib/functionsApi'
 import { useWaterScanCredits, DAILY_WATER_SCAN_LIMIT } from '../lib/waterScanCredits'
+import { TOPO_BASEMAP as BASEMAP, meIcon, RecenterMap } from '../lib/leafletTopo'
 import {
   DEFAULT_RADIUS_MILES,
   MIN_RADIUS_MILES,
@@ -33,19 +34,10 @@ import './MapWater.css'
 
 const MILES_TO_METERS = 1609.344
 
-// USGSTopo is USGS's official public-domain topographic basemap (contours,
-// shaded relief, elevation-informed terrain) — same National Map family as
-// the water data already used here. No API key, no billing: verified live
-// (a direct tile fetch succeeded) before wiring this in. This is the only
-// basemap now -- a vector-tile "street" option (OpenFreeMap) was tried and
-// removed after it rendered blank for the user in practice; see git history
-// (the openfreemap-basemap and fix-openfreemap-blank-canvas commits) if
-// that's ever revisited.
-const BASEMAP = {
-  // Esri tile-cache URL order is z/y/x (not the usual z/x/y).
-  url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}',
-  attribution: 'USGS National Map — USGSTopo (public domain)',
-}
+// This is the only basemap now -- a vector-tile "street" option
+// (OpenFreeMap) was tried and removed after it rendered blank for the user
+// in practice; see git history (the openfreemap-basemap and
+// fix-openfreemap-blank-canvas commits) if that's ever revisited.
 
 function waterIcon(type: WaterFeature['waterType']) {
   return L.divIcon({
@@ -54,31 +46,6 @@ function waterIcon(type: WaterFeature['waterType']) {
     iconSize: [20, 20],
     iconAnchor: [10, 10],
   })
-}
-
-function meIcon() {
-  return L.divIcon({
-    html: '<span class="me-divicon" aria-label="Your location"><span class="me-divicon-pulse"></span>📍</span>',
-    className: '',
-    iconSize: [28, 28],
-    iconAnchor: [14, 28],
-  })
-}
-
-/**
- * react-leaflet's <MapContainer center=…> only sets the INITIAL camera
- * position at mount time — changing that prop later (e.g. after "Re-center
- * on me" or opening a saved area) does not pan the map. This imperatively
- * re-centers the live Leaflet instance whenever the target location
- * actually changes, so new markers end up on-screen instead of off in an
- * unmoved viewport.
- */
-function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
-  const map = useMap()
-  useEffect(() => {
-    map.setView([lat, lng], map.getZoom())
-  }, [lat, lng, map])
-  return null
 }
 
 function formatDate(epochMs: number): string {

@@ -14,6 +14,7 @@ const FEATURES: Feature[] = [
   { icon: '🧭', title: 'Compass', description: 'Magnetic heading + find true north using the stars.', to: '/app/compass' },
   { icon: '📍', title: 'Waypoints & Trail', description: 'Drop a pin at camp, then find your way back.', to: '/app/waypoints' },
   { icon: '🗺️', title: 'Water & Terrain Map', description: 'Ponds, creeks, rivers, and lakes within an adjustable radius.', to: '/app/map' },
+  { icon: '⛰️', title: 'Topography Map', description: 'A topo map centered on you, plus a full guide to reading contour lines.', to: '/app/topography' },
   { icon: '🏔️', title: '3D Maps', description: 'A tilted, rotatable 3D view of your area.', to: '/app/map3d' },
   { icon: '🌔', title: 'Moon Phase', description: "Tonight's moonlight, and when to expect the next full and new moons.", to: '/app/moon-phase' },
   { icon: '🆘', title: 'SOS Beacon', description: 'Flash and sound a Morse code SOS distress signal.', to: '/app/sos-beacon' },

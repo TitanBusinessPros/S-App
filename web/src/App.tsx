@@ -33,6 +33,10 @@ const MapWater = lazy(() => import('./pages/MapWater').then((m) => ({ default: m
 // Same reasoning: Map3D pulls in plain MapLibre GL (~1 MB), only needed by
 // someone who actually opens this page.
 const Map3D = lazy(() => import('./pages/Map3D').then((m) => ({ default: m.Map3D })))
+// Also Leaflet, same reasoning as MapWater -- Rollup automatically shares
+// the Leaflet code between this chunk and MapWater's rather than bundling
+// two separate copies, since both are lazy-loaded.
+const TopographyMap = lazy(() => import('./pages/TopographyMap').then((m) => ({ default: m.TopographyMap })))
 
 function MapWaterFallback() {
   return (
@@ -93,6 +97,18 @@ export default function App() {
                 <PaidFeatureRoute>
                   <Suspense fallback={<MapWaterFallback />}>
                     <MapWater />
+                  </Suspense>
+                </PaidFeatureRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app/topography"
+            element={
+              <ProtectedRoute>
+                <PaidFeatureRoute>
+                  <Suspense fallback={<MapWaterFallback />}>
+                    <TopographyMap />
                   </Suspense>
                 </PaidFeatureRoute>
               </ProtectedRoute>
