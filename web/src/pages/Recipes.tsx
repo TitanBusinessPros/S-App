@@ -223,7 +223,7 @@ const CATEGORY_GUIDES: Record<RecipeCategory, React.ReactNode> = {
 
 function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
-    <div className="card recipe-card">
+    <div id={`recipe-${recipe.id}`} className="card recipe-card">
       <h3>
         {recipe.emoji} {recipe.title}
       </h3>
