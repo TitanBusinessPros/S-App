@@ -36,6 +36,7 @@ export function Map3D() {
   const mapRef = useRef<MaplibreMap | null>(null)
   const { coords, loading: locating, error: locationError, locate } = useGeolocation()
   const [mapReady, setMapReady] = useState(false)
+  const [mapError, setMapError] = useState<string | null>(null)
 
   useEffect(() => {
     locate()
@@ -48,19 +49,45 @@ export function Map3D() {
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return
 
-    const map = new MaplibreMap({
-      container: mapContainerRef.current,
-      style: STYLE_URL,
-      center: coords ? [coords.lng, coords.lat] : FALLBACK_CENTER,
-      zoom: coords ? DEFAULT_ZOOM : 4,
-      pitch: coords ? DEFAULT_PITCH : 0,
-      bearing: coords ? DEFAULT_BEARING : 0,
-    })
+    // Every failure mode below (WebGL unavailable, a style/tile fetch that
+    // never resolves, an uncaught construction error) previously left the
+    // "Loading map…" overlay showing forever with zero indication of what
+    // went wrong -- unfixable from outside the browser itself. All three
+    // are now surfaced directly on the page, in plain text, so a report of
+    // "still loading" turns into an actual error message instead.
+    let map: MaplibreMap
+    const loadTimeout = setTimeout(() => {
+      setMapError((prev) => prev ?? 'Map did not finish loading within 15 seconds (no error was reported).')
+    }, 15000)
+
+    try {
+      map = new MaplibreMap({
+        container: mapContainerRef.current,
+        style: STYLE_URL,
+        center: coords ? [coords.lng, coords.lat] : FALLBACK_CENTER,
+        zoom: coords ? DEFAULT_ZOOM : 4,
+        pitch: coords ? DEFAULT_PITCH : 0,
+        bearing: coords ? DEFAULT_BEARING : 0,
+      })
+    } catch (err) {
+      clearTimeout(loadTimeout)
+      setMapError(err instanceof Error ? err.message : 'Could not create the map (unknown error).')
+      return
+    }
+
     map.addControl(new NavigationControl({ visualizePitch: true }), 'top-right')
-    map.on('load', () => setMapReady(true))
+    map.on('load', () => {
+      clearTimeout(loadTimeout)
+      setMapReady(true)
+    })
+    map.on('error', (e) => {
+      clearTimeout(loadTimeout)
+      setMapError(e.error?.message ?? 'Unknown map error.')
+    })
     mapRef.current = map
 
     return () => {
+      clearTimeout(loadTimeout)
       map.remove()
       mapRef.current = null
     }
@@ -95,7 +122,14 @@ export function Map3D() {
         <div ref={mapContainerRef} className="map3d-container" />
         {!mapReady && (
           <div className="map3d-overlay">
-            {locationError ? (
+            {mapError ? (
+              <>
+                <p className="login-error">Map failed to load: {mapError}</p>
+                <p className="mono" style={{ fontSize: '0.75rem' }}>
+                  Please screenshot this message if reporting the problem.
+                </p>
+              </>
+            ) : locationError ? (
               <>
                 <p className="login-error">{locationError}</p>
                 <button type="button" className="btn btn-primary" onClick={locate}>
