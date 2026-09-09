@@ -1,6 +1,6 @@
 import { LegalPageLayout } from '../components/LegalPageLayout'
 
-const LAST_UPDATED = 'September 7, 2026'
+const LAST_UPDATED = 'September 8, 2026'
 
 export function Privacy() {
   return (
@@ -8,7 +8,8 @@ export function Privacy() {
       <div className="legal-callout legal-callout-info">
         🔒 <strong>In short:</strong> We collect only what's needed to run your account and the features you use
         — your Google name/email/photo, your device location when a feature needs it, and billing status from
-        Stripe. We don't run ads, don't use analytics/advertising trackers, and don't sell your data.
+        Stripe. We use Firebase Analytics to see which features get used, in aggregate — not tied to your name
+        or email. We don't run ads, don't use advertising trackers, and don't sell your data.
       </div>
 
       <p>
@@ -55,18 +56,30 @@ export function Privacy() {
         limit.
       </p>
 
+      <h3>Analytics</h3>
+      <p>
+        We use Firebase Analytics (built on Google Analytics) to understand which screens and features are
+        actually used, in aggregate — for example, how many people open the Water & Terrain Map versus the
+        Compass. It automatically collects standard usage data such as which screens you view, general device
+        and browser information, and a coarse, IP-derived location (city-level, not precise GPS). It is not
+        linked to your name, email, or account, and it's separate from the precise device location a feature
+        like the Water & Terrain Map asks your permission for directly. This data is aggregated with other
+        users' and we don't use it to build individual profiles or serve ads.
+      </p>
+
       <h2>2. What We Don't Collect</h2>
       <p>
-        We don't use advertising or analytics trackers (no ad networks, no behavioral analytics SDKs), we don't
-        run ads, and we never ask for or store a password — Google Sign-In handles that. We don't sell your
-        personal information to anyone.
+        We don't run ads or use advertising trackers of any kind (no ad networks, no ad-targeting SDKs), and we
+        never ask for or store a password — Google Sign-In handles that. We don't sell your personal
+        information to anyone.
       </p>
 
       <h2>3. How We Use Information</h2>
       <p>
         We use the information above to: operate your account and remember your preferences; determine trial
         and subscription access; process and reconcile payments through Stripe; provide the location-based
-        features you request; and for basic server-side logging to diagnose errors in our Cloud Functions.
+        features you request; for basic server-side logging to diagnose errors in our Cloud Functions; and,
+        via Firebase Analytics, to understand feature usage in aggregate so we know what to improve.
       </p>
 
       <h2>4. Where Data Is Stored</h2>
@@ -80,7 +93,8 @@ export function Privacy() {
       <h2>5. Third-Party Services</h2>
       <p>The Service relies on these third parties, each under its own privacy policy:</p>
       <ul>
-        <li><strong>Google</strong> — sign-in and the Firebase infrastructure the app runs on.</li>
+        <li><strong>Google</strong> — sign-in, the Firebase infrastructure the app runs on, and Firebase/Google
+          Analytics (see "Analytics" above).</li>
         <li><strong>Stripe</strong> — payment processing for subscriptions.</li>
         <li>
           <strong>USGS (National Map)</strong>, <strong>GBIF</strong>, and the <strong>U.S. Census Bureau</strong>

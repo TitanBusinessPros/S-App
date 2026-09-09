@@ -1,6 +1,6 @@
 import { LegalPageLayout } from '../components/LegalPageLayout'
 
-const LAST_UPDATED = 'September 5, 2026'
+const LAST_UPDATED = 'September 8, 2026'
 
 export function Terms() {
   return (
@@ -85,9 +85,10 @@ export function Terms() {
 
       <h2>8. Third-Party Data &amp; Services</h2>
       <p>
-        The Service displays data from independent third parties, including Open-Meteo (weather), the USGS
-        (water features), and GBIF (species occurrence records), and relies on Google (sign-in) and Stripe
-        (payments) to operate. We do not control and are not responsible for the accuracy, availability, or
+        The Service displays data from independent third parties, including the USGS (water features), GBIF
+        (species occurrence records), the U.S. Census Bureau (location lookups), and OpenFreeMap (3D map
+        tiles), and relies on Google (sign-in, Firebase infrastructure, and Analytics) and Stripe (payments) to
+        operate. We do not control and are not responsible for the accuracy, availability, or
         reliability of any third-party data or service, and your use of those third parties is subject to their
         own terms and policies.
       </p>
