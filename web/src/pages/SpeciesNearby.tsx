@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Shell } from '../components/Shell'
 import { GuideDisclaimer } from '../components/GuideDisclaimer'
+import { useAuth } from '../lib/AuthContext'
 import { useGeolocation } from '../lib/useGeolocation'
 import { fetchLocationName, fetchSpeciesNearby } from '../lib/functionsApi'
+import { useSpeciesLookupCredits, DAILY_SPECIES_LOOKUP_LIMIT } from '../lib/speciesLookupCredits'
 import {
   categoryIcon,
   categoryLabel,
@@ -12,7 +14,15 @@ import {
 } from '../lib/species'
 import { DEFAULT_RADIUS_MILES, MIN_RADIUS_MILES, MAX_RADIUS_MILES } from '../lib/water'
 import '../components/GuidePage.css'
+import '../components/PageHeader.css'
 import './SpeciesNearby.css'
+
+function formatDate(epochMs: number): string {
+  return new Date(epochMs).toLocaleString(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  })
+}
 
 function SpeciesCard({ entry }: { entry: ConfirmedSpeciesEntry }) {
   const isDanger = entry.category === 'dangerous-animal' || entry.category === 'dangerous-plant'
@@ -69,12 +79,21 @@ function SpeciesCard({ entry }: { entry: ConfirmedSpeciesEntry }) {
 }
 
 export function SpeciesNearby() {
+  const { user } = useAuth()
+  const uid = user?.uid ?? null
   const { coords, loading: locating, error: locationError, locate } = useGeolocation()
+  const { creditsRemaining, resetAt: creditsResetAt } = useSpeciesLookupCredits(uid)
   const [radiusMiles, setRadiusMiles] = useState(DEFAULT_RADIUS_MILES)
   const [species, setSpecies] = useState<ConfirmedSpeciesEntry[]>([])
   const [fetching, setFetching] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [locality, setLocality] = useState<string | null>(null)
+  // Which radius/month the results currently on screen were actually looked
+  // up for — null means "no lookup run yet this visit". Every lookup,
+  // including the first, now requires pressing "Look Up Nearby" (see
+  // handleLookUpNearby); nothing auto-fetches on mount, or when location/
+  // radius changes, the way it used to.
+  const [lastLookup, setLastLookup] = useState<{ radiusMiles: number; month: number } | null>(null)
 
   const month = new Date().getMonth() + 1
 
@@ -83,28 +102,38 @@ export function SpeciesNearby() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => {
+  // Species lookups are manual and credit-gated, mirroring the Water &
+  // Terrain Map's "Scan for Water" button (see MapWater.tsx). Each press
+  // costs 1 of DAILY_SPECIES_LOOKUP_LIMIT credits per rolling 24h window;
+  // the server (functions/src/species.ts, functions/src/
+  // speciesLookupCredits.ts) is the real enforcement point, this is just
+  // the UI trigger.
+  async function handleLookUpNearby() {
     if (!coords) return
-    let cancelled = false
+
     setFetching(true)
     setFetchError(null)
 
-    fetchSpeciesNearby(coords.lat, coords.lng, radiusMiles, month)
-      .then((result) => {
-        if (!cancelled) setSpecies(result.species)
-      })
-      .catch(() => {
-        if (!cancelled) setFetchError('Could not load nearby species. Try again in a moment.')
-      })
-      .finally(() => {
-        if (!cancelled) setFetching(false)
-      })
-
-    return () => {
-      cancelled = true
+    try {
+      const result = await fetchSpeciesNearby(coords.lat, coords.lng, radiusMiles, month)
+      setSpecies(result.species)
+      setLastLookup({ radiusMiles, month })
+    } catch (err) {
+      const code = (err as { code?: string } | undefined)?.code
+      if (code === 'functions/resource-exhausted') {
+        const resetAt = (err as { details?: { resetAt?: number } }).details?.resetAt
+        setFetchError(
+          resetAt
+            ? `You're out of species lookups for today. More free up ${formatDate(resetAt)}.`
+            : "You're out of species lookups for today. Try again later.",
+        )
+      } else {
+        setFetchError('Could not load nearby species. Try again in a moment.')
+      }
+    } finally {
+      setFetching(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coords, radiusMiles, month])
+  }
 
   // Non-fatal, separate from the species fetch above — shown so you can
   // verify the app resolved your actual location, not tied to whether the
@@ -159,6 +188,18 @@ export function SpeciesNearby() {
         <button type="button" className="btn" onClick={locate} disabled={locating}>
           {locating ? 'Locating…' : coords ? 'Re-check my location' : 'Use my location'}
         </button>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={handleLookUpNearby}
+          disabled={!coords || fetching || creditsRemaining <= 0}
+        >
+          {fetching
+            ? 'Looking up…'
+            : creditsRemaining <= 0
+              ? 'No lookups left today'
+              : `🔍 Look Up Nearby (${creditsRemaining} left)`}
+        </button>
         <span className="species-month-badge">Showing what's active in {MONTH_NAMES[month - 1]}</span>
       </div>
 
@@ -180,7 +221,26 @@ export function SpeciesNearby() {
         </div>
       )}
 
-      {coords && !fetching && !fetchError && groups.length === 0 && (
+      {coords && !fetching && !fetchError && creditsRemaining <= 0 && lastLookup === null && (
+        <p className="map-disclosure">
+          ⏳ No species lookups left today.{creditsResetAt ? ` More free up ${formatDate(creditsResetAt)}.` : ''}
+        </p>
+      )}
+
+      {coords && !fetching && !fetchError && lastLookup === null && creditsRemaining > 0 && (
+        <div className="card species-empty">
+          <p>
+            Press "Look Up Nearby" to see what's around you — uses 1 of your {DAILY_SPECIES_LOOKUP_LIMIT} daily
+            lookups.
+          </p>
+        </div>
+      )}
+
+      {coords && !fetching && lastLookup !== null && lastLookup.radiusMiles !== radiusMiles && (
+        <p className="map-disclosure">↻ Radius changed — press "Look Up Nearby" again to update these results.</p>
+      )}
+
+      {coords && !fetching && !fetchError && lastLookup !== null && groups.length === 0 && (
         <div className="card species-empty">
           <p>Nothing in our starter dataset is in season this month yet.</p>
         </div>

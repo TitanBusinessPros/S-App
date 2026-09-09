@@ -41,6 +41,7 @@ export interface GetSpeciesNearbyResult {
   species: ConfirmedSpeciesEntry[]
   radiusMiles: number
   month: number
+  creditsRemaining: number
 }
 
 const CATEGORY_META: Record<SpeciesCategory, { label: string; icon: string }> = {
