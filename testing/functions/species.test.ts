@@ -2,18 +2,38 @@ import functionsTest from "firebase-functions-test";
 
 const testEnv = functionsTest();
 
-// ---- In-memory Firestore mock (users collection only, for requirePaidAccess
-// -- see functions/src/entitlement.ts) -- same shape as entitlement.test.ts. ----
+// ---- In-memory Firestore mock: path-prefixed (collection/doc) keys, so
+// `users` (for requirePaidAccess) and `speciesLookupCredits` (for the daily
+// lookup limit) can share one flat store without colliding when the same
+// uid is used as the doc id in both -- see water.test.ts for the same
+// pattern. ----
 let store: Record<string, any> = {};
 
-const docMock = jest.fn((id: string) => ({
-  id,
-  get: jest.fn(async () => ({ exists: store[id] !== undefined, data: () => store[id] })),
-}));
-const collectionMock = jest.fn(() => ({ doc: docMock }));
+function docRef(path: string) {
+  return {
+    id: path.split("/").pop() as string,
+    get: jest.fn(async () => ({
+      exists: store[path] !== undefined,
+      data: () => store[path],
+    })),
+    set: jest.fn(async (data: any, opts?: { merge?: boolean }) => {
+      store[path] = opts?.merge ? { ...(store[path] ?? {}), ...data } : data;
+    }),
+  };
+}
+const collectionMock = jest.fn((name: string) => ({ doc: (id: string) => docRef(`${name}/${id}`) }));
+const runTransactionMock = jest.fn(async (updateFn: (tx: any) => Promise<void> | void) => {
+  const tx = {
+    get: async (ref: any) => ref.get(),
+    set: (ref: any, data: any, opts?: any) => {
+      ref.set(data, opts);
+    },
+  };
+  return updateFn(tx);
+});
 
 jest.mock("firebase-admin/firestore", () => ({
-  getFirestore: () => ({ collection: collectionMock }),
+  getFirestore: () => ({ collection: collectionMock, runTransaction: runTransactionMock }),
 }));
 
 const AUTH = { uid: "test-uid" };
@@ -22,13 +42,15 @@ const AUTH = { uid: "test-uid" };
  * passes it by default so the existing tests below (about species-lookup
  * behavior, not entitlement) don't each need to do this themselves. */
 function seedPaidProfile(uid = AUTH.uid) {
-  store[uid] = { tier: "premium" };
+  store[`users/${uid}`] = { tier: "premium" };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { SPECIES_DATA } = require("../../functions/src/speciesData");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { isActiveInMonth, milesToKm, hasNearbyOccurrence, getSpeciesNearby } = require("../../functions/src/species");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { DAILY_SPECIES_LOOKUP_LIMIT } = require("../../functions/src/speciesLookupCredits");
 
 const VALID_CATEGORIES = [
   "edible-plant",
@@ -146,11 +168,35 @@ describe("getSpeciesNearby", () => {
   });
 
   it("rejects a free-tier (trial-expired) account with permission-denied, proving the server enforces this directly", async () => {
-    store["locked-uid"] = { tier: "free" };
+    store["users/locked-uid"] = { tier: "free" };
     const wrapped = testEnv.wrap(getSpeciesNearby);
     await expect(
       wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 }, auth: { uid: "locked-uid" } }),
     ).rejects.toMatchObject({ code: "permission-denied" });
+  });
+
+  it("includes creditsRemaining in the result and decrements it across calls", async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ count: 0 }) }) as unknown as typeof fetch;
+    const wrapped = testEnv.wrap(getSpeciesNearby);
+
+    const first = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 }, auth: AUTH });
+    expect(first.creditsRemaining).toBe(DAILY_SPECIES_LOOKUP_LIMIT - 1);
+
+    const second = await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 }, auth: AUTH });
+    expect(second.creditsRemaining).toBe(DAILY_SPECIES_LOOKUP_LIMIT - 2);
+  });
+
+  it("rejects the call after DAILY_SPECIES_LOOKUP_LIMIT lookups within 24h", async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ count: 0 }) }) as unknown as typeof fetch;
+    const wrapped = testEnv.wrap(getSpeciesNearby);
+
+    for (let i = 0; i < DAILY_SPECIES_LOOKUP_LIMIT; i++) {
+      await wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 }, auth: AUTH });
+    }
+
+    await expect(
+      wrapped({ data: { lat: 35.5, lng: -97.5, radiusMiles: 10, month: 1 }, auth: AUTH }),
+    ).rejects.toMatchObject({ code: "resource-exhausted" });
   });
 
   it("only calls GBIF for in-season species, and labels the confirmed one", async () => {

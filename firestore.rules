@@ -57,6 +57,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Per-user species-lookup credit bookkeeping (see
+    // functions/src/speciesLookupCredits.ts) — same shape and reasoning as
+    // waterScanCredits above, just its own separate credit pool.
+    match /speciesLookupCredits/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+    }
+
     // Per-user areas explicitly saved for offline use. Each doc is a
     // self-contained, denormalized copy of a water-area result (not just a
     // pointer) so it renders fully offline. Users may only touch their own

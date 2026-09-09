@@ -3,6 +3,7 @@ import * as logger from "firebase-functions/logger";
 import { SPECIES_DATA, type SpeciesEntry } from "./speciesData";
 import { clampRadiusMiles } from "./water";
 import { requirePaidAccess } from "./entitlement";
+import { consumeSpeciesLookupCredit } from "./speciesLookupCredits";
 
 export function isActiveInMonth(entry: SpeciesEntry, month: number): boolean {
   return entry.activeMonths.includes(month);
@@ -56,6 +57,10 @@ export async function hasNearbyOccurrence(
  * Requires an active trial/premium/gold tier (see entitlement.ts) — a
  * locked account gets permission-denied here even if it calls this function
  * directly, bypassing the client's PaidFeatureRoute gate.
+ *
+ * Also rate-limited to DAILY_SPECIES_LOOKUP_LIMIT calls per signed-in user
+ * per rolling 24h window (see speciesLookupCredits.ts) — mirrors
+ * getWaterFeatures' water-scan limit, on its own separate credit pool.
  */
 export const getSpeciesNearby = onCall({ invoker: "public" }, async (request) => {
   const { lat, lng, radiusMiles, month } = (request.data ?? {}) as {
@@ -85,6 +90,7 @@ export const getSpeciesNearby = onCall({ invoker: "public" }, async (request) =>
     throw new HttpsError("unauthenticated", "Sign in to see nearby species.");
   }
   await requirePaidAccess(uid);
+  const { creditsRemaining } = await consumeSpeciesLookupCredit(uid);
 
   const clampedRadius = clampRadiusMiles(radiusMiles);
   const radiusKm = milesToKm(clampedRadius);
@@ -120,5 +126,5 @@ export const getSpeciesNearby = onCall({ invoker: "public" }, async (request) =>
     checked: inSeason.length,
   });
 
-  return { species, radiusMiles: clampedRadius, month };
+  return { species, radiusMiles: clampedRadius, month, creditsRemaining };
 });
