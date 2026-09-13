@@ -2,6 +2,12 @@
 
 A wilderness survival guide app. Note: signing in (Google Sign-In) requires an internet connection — it is not offline-first, though a number of individual features work without a live connection once you're signed in and have opened the app at least once. See "On credentials" and each feature's own notes below for what actually needs a connection and what doesn't.
 
+## Sibling apps sharing this backend
+
+As of 2026-09-12, **this is the only repo that may own backend deploys** for the Firebase project `survival-day-app`. A second repo, [`S-App-2-Language`](https://github.com/TitanBusinessPros/S-App-2-Language), is a frontend-only duplicate of this app's `web/` workspace — a starting point for a localized/second-language variant — that deliberately shares this same Firebase project by explicit decision: same Auth users, same Firestore data/entitlement (a subscriber here is automatically a subscriber there, no separate paywall), and the exact same deployed Cloud Functions. It deploys to its own Hosting site (`survival-day-2-language.web.app`, a second site inside this same project) and has no `functions/`, `firestore.rules`, or `storage.rules` of its own.
+
+**Practical implication for future work here:** a Cloud Function rename/removal, a Firestore schema/field change, or a Firestore/Storage rules change made in *this* repo can affect that app too, since it calls the same deployed backend. There's no CI or test coverage in this repo that would catch that — check `S-App-2-Language`'s `web/src` for usages before renaming or removing anything backend-facing that isn't purely internal to this app's own UI.
+
 ## Session Status (as of 2026-09-09 CDT)
 
 This section exists so a new session (human or Claude Code) can pick up exactly where the last one left off. It intentionally contains **no credentials or secrets** — see "On credentials" below for why.
