@@ -25,6 +25,7 @@ describe('computeEntitlement', () => {
       isTrialing: false,
       trialDaysLeft: null,
       tier: null,
+      error: null,
     })
   })
 

@@ -35,21 +35,36 @@ export function useUserProfile() {
   const { user } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) {
       setProfile(null)
+      setError(null)
       setLoading(false)
       return
     }
 
     setLoading(true)
-    const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      setProfile(snap.exists() ? (snap.data() as UserProfile) : null)
-      setLoading(false)
-    })
+    setError(null)
+    const unsubscribe = onSnapshot(
+      doc(db, 'users', user.uid),
+      (snap) => {
+        setProfile(snap.exists() ? (snap.data() as UserProfile) : null)
+        setLoading(false)
+      },
+      // Without this, a failed read (permission-denied, offline with no
+      // cached copy, etc.) left `loading` stuck true forever -- the caller
+      // never learns the read failed, so every route gated on this hook
+      // (PaidFeatureRoute) shows "Loading…" with no way out. Surface it as
+      // a real error state instead of hanging.
+      (err) => {
+        setError(err.message)
+        setLoading(false)
+      },
+    )
     return unsubscribe
   }, [user])
 
-  return { profile, loading }
+  return { profile, loading, error }
 }
