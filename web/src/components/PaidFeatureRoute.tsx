@@ -19,7 +19,22 @@ import { useEntitlement } from '../lib/entitlement'
  * reference content bundled into the client, same as it always was.
  */
 export function PaidFeatureRoute({ children }: { children: ReactNode }) {
-  const { loading, hasAccess } = useEntitlement()
+  const { loading, hasAccess, error } = useEntitlement()
+
+  // Surfaced instead of leaving `loading` stuck true forever -- see
+  // useUserProfile.ts's onSnapshot error handler. Retrying re-mounts this
+  // component, which re-subscribes from scratch.
+  if (error) {
+    return (
+      <div style={{ display: 'grid', placeItems: 'center', height: '100vh', textAlign: 'center', padding: '1rem' }}>
+        <div>
+          <p className="mono">Couldn't check your membership status.</p>
+          <p className="mono">{error}</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (

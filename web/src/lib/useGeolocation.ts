@@ -28,10 +28,24 @@ export function useGeolocation() {
         })
         setLoading(false)
       },
-      () => {
-        setError('Location permission was denied.')
+      (err) => {
+        // GeolocationPositionError.TIMEOUT (3) is impossible to hit without
+        // an explicit `timeout` below -- the browser default is "wait
+        // forever", which used to leave this stuck on a loading state with
+        // no way out (a missed/ignored permission prompt, no GPS fix, a
+        // stalled network location lookup). A first visit to a brand-new
+        // origin is exactly when a permission prompt is most likely to be
+        // missed, since none of this device's per-origin grants carry over.
+        setError(
+          err.code === err.PERMISSION_DENIED
+            ? 'Location permission was denied.'
+            : err.code === err.TIMEOUT
+              ? 'Timed out getting your location. Check that location access is allowed for this site, then try again.'
+              : 'Could not get your location. Try again.',
+        )
         setLoading(false)
       },
+      { timeout: 15_000 },
     )
   }, [])
 

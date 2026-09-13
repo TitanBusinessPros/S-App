@@ -10,6 +10,9 @@ export interface Entitlement {
   /** Whole days left in the trial, floored, never negative. Null outside a trial. */
   trialDaysLeft: number | null
   tier: UserProfile['tier'] | null
+  /** Set if the underlying Firestore profile read failed outright (see
+   * useUserProfile) rather than the profile genuinely not existing yet. */
+  error: string | null
 }
 
 /**
@@ -21,11 +24,11 @@ export interface Entitlement {
  */
 export function computeEntitlement(profile: UserProfile | null, now: number = Date.now()): Entitlement {
   if (!profile) {
-    return { loading: true, hasAccess: false, isTrialing: false, trialDaysLeft: null, tier: null }
+    return { loading: true, hasAccess: false, isTrialing: false, trialDaysLeft: null, tier: null, error: null }
   }
 
   if (profile.tier === 'gold' || profile.tier === 'premium') {
-    return { loading: false, hasAccess: true, isTrialing: false, trialDaysLeft: null, tier: profile.tier }
+    return { loading: false, hasAccess: true, isTrialing: false, trialDaysLeft: null, tier: profile.tier, error: null }
   }
 
   if (profile.tier === 'trial' && profile.trialEndsAt !== null) {
@@ -46,15 +49,27 @@ export function computeEntitlement(profile: UserProfile | null, now: number = Da
       const grantedDays = Math.ceil((profile.trialEndsAt - profile.createdAt) / 86_400_000)
       trialDaysLeft = Math.max(1, Math.min(observedDaysLeft, grantedDays))
     }
-    return { loading: false, hasAccess: stillTrialing, isTrialing: stillTrialing, trialDaysLeft, tier: profile.tier }
+    return {
+      loading: false,
+      hasAccess: stillTrialing,
+      isTrialing: stillTrialing,
+      trialDaysLeft,
+      tier: profile.tier,
+      error: null,
+    }
   }
 
   // 'free', or a legacy/expired 'trial' with no trialEndsAt to check.
-  return { loading: false, hasAccess: false, isTrialing: false, trialDaysLeft: null, tier: profile.tier }
+  return { loading: false, hasAccess: false, isTrialing: false, trialDaysLeft: null, tier: profile.tier, error: null }
 }
 
 export function useEntitlement(): Entitlement {
-  const { profile, loading } = useUserProfile()
-  if (loading) return { loading: true, hasAccess: false, isTrialing: false, trialDaysLeft: null, tier: null }
+  const { profile, loading, error } = useUserProfile()
+  if (error) {
+    return { loading: false, hasAccess: false, isTrialing: false, trialDaysLeft: null, tier: null, error }
+  }
+  if (loading) {
+    return { loading: true, hasAccess: false, isTrialing: false, trialDaysLeft: null, tier: null, error: null }
+  }
   return computeEntitlement(profile)
 }
